@@ -371,7 +371,7 @@ export interface RejoinIndicatorWidgetSettings extends BaseWidgetSettings {
 }
 
 export interface FlagWidgetSettings extends BaseWidgetSettings {
-  id: 'flag';
+  id: 'flag' | 'flag2';
   config: {
     enabled: boolean;
     showOnlyWhenOnTrack: boolean;
@@ -384,6 +384,7 @@ export interface FlagWidgetSettings extends BaseWidgetSettings {
     sessionVisibility: SessionVisibilitySettings;
   };
 }
+
 
 export interface FlatTrackMapWidgetSettings extends BaseWidgetSettings {
   config: {

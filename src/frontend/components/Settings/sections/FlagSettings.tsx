@@ -50,10 +50,14 @@ const migrateConfig = (savedConfig: unknown): FlagWidgetSettings['config'] => {
 };
 
 export const FlagSettings = () => {
-  const { currentDashboard } = useDashboard();
+  const { currentDashboard, bridge } = useDashboard();
 
   const savedSettings = currentDashboard?.widgets.find(
     (w) => w.id === SETTING_ID
+  ) as FlagWidgetSettings | undefined;
+
+  const savedSettings2 = currentDashboard?.widgets.find(
+    (w) => w.id === 'flag2'
   ) as FlagWidgetSettings | undefined;
 
   const [settings, setSettings] = useState<FlagWidgetSettings>({
@@ -61,6 +65,27 @@ export const FlagSettings = () => {
     enabled: savedSettings?.enabled ?? true,
     config: migrateConfig(savedSettings?.config),
   });
+
+  const [flag2Enabled, setFlag2Enabled] = useState(savedSettings2?.enabled ?? false);
+
+  const handleFlag2Toggle = (enabled: boolean) => {
+    setFlag2Enabled(enabled);
+    // Update flag2 settings in dashboard
+    if (currentDashboard) {
+      const updatedWidgets = currentDashboard.widgets.map((w) => {
+        if (w.id === 'flag2') {
+          return { ...w, enabled };
+        }
+        return w;
+      });
+      bridge.saveDashboard({
+        ...currentDashboard,
+        widgets: updatedWidgets,
+      });
+      // Reload dashboard to recreate overlay windows
+      bridge.reloadDashboard();
+    }
+  };
 
   if (!currentDashboard) return <>Loading...</>;
 
@@ -74,6 +99,21 @@ export const FlagSettings = () => {
     >
       {(handleConfigChange) => (
         <div className="space-y-6">
+          <div className="flex items-center justify-between p-4 bg-slate-700 rounded-lg">
+            <div>
+              <h4 className="text-md font-medium text-slate-300">
+                Enable Second Flag
+              </h4>
+              <p className="text-sm text-slate-400">
+                Show a second independent flag window with the same settings.
+              </p>
+            </div>
+            <ToggleSwitch
+              enabled={flag2Enabled}
+              onToggle={handleFlag2Toggle}
+            />
+          </div>
+
           <div className="flex items-center justify-between">
             <div>
               <h4 className="text-md font-medium text-slate-300">

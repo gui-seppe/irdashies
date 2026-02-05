@@ -4,9 +4,17 @@ import { useBlinkState } from './hooks/useBlinkState';
 import { getLedColor } from './hooks/getLedColor';
 import { getTextColorClass } from './hooks/getTextColorClass';
 import { getFlag } from '@irdashies/utils/getFlag';
+import { useMemo } from 'react';
 
 export const Flag = () => {
-  const settings = useFlagSettings();
+  // Determine widget ID from current route
+  const widgetId = useMemo(() => {
+    const hash = window.location.hash;
+    const match = hash.match(/\/#\/([^?]+)/);
+    return match ? match[1] : 'flag';
+  }, []);
+
+  const settings = useFlagSettings(widgetId);
 
   const sessionFlags = useTelemetryValue<number>('SessionFlags') ?? 0;
   const isPlayerOnTrack = useTelemetryValue<boolean>('IsOnTrack') ?? false;

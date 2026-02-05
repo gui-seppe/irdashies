@@ -1,9 +1,9 @@
 import { useDashboard } from '@irdashies/context';
 import { FlagWidgetSettings } from '../../Settings/types';
 
-export const useFlagSettings = () => {
+export const useFlagSettings = (widgetId: string) => {
   const { currentDashboard } = useDashboard();
-  const saved = currentDashboard?.widgets.find((w) => w.id === 'flag') as
+  const saved = currentDashboard?.widgets.find((w) => w.id === widgetId) as
     | FlagWidgetSettings
     | undefined;
 

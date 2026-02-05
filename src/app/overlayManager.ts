@@ -51,7 +51,7 @@ export class OverlayManager {
     widgets.forEach((widget) => {
       if (!widget.enabled) return; // skip disabled widgets
       const window = this.createOverlayWindow(widget);
-      trackWindowMovement(widget, window);
+      trackWindowMovement(widget, window, this);
     });
     this.createSettingsWindow();
   }
@@ -201,7 +201,7 @@ export class OverlayManager {
       }
       if (!this.overlayWindows.has(widget.id)) {
         const window = this.createOverlayWindow(widget);
-        trackWindowMovement(widget, window);
+        trackWindowMovement(widget, window, this);
       } else {
         // Window already exists
       }
@@ -214,7 +214,7 @@ export class OverlayManager {
     widgets.forEach((widget) => {
       if (!widget.enabled) return;
       const window = this.createOverlayWindow(widget);
-      trackWindowMovement(widget, window);
+      trackWindowMovement(widget, window, this);
     });
   }
 

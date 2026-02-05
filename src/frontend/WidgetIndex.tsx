@@ -30,6 +30,7 @@ export const WIDGET_MAP: Record<string, (config?: any) => React.JSX.Element | nu
   telemetryinspector: TelemetryInspector,
   pitlanehelper: PitlaneHelper,
   flag: Flag,
+  flag2: Flag,
 };
 
 export type WidgetId = keyof typeof WIDGET_MAP;
