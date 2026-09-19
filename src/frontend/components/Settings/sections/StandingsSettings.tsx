@@ -1221,8 +1221,8 @@ export const StandingsSettings = () => {
 
                   <SettingsSection title="Columns">
                     <SettingToggleRow
-                      title="Show Column Names"
-                      description="Show each enabled column name above its values"
+                      title="Show Column Headers"
+                      description="Show each enabled column header above its values"
                       enabled={
                         settings.config.stylingOptions?.columnHeaders
                           ?.enabled ?? false

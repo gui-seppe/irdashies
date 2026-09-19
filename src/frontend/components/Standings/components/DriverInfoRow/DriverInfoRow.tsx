@@ -503,11 +503,7 @@ export const DriverInfoRow = memo((props: DriverRowInfoProps) => {
             key="gap"
             delta={gap}
             showForUndefined={
-              position === 1
-                ? hideLeaderGapIntervalLabels
-                  ? '-'
-                  : 'gap'
-                : undefined
+              position === 1 && !hideLeaderGapIntervalLabels ? 'gap' : undefined
             }
             decimalPlaces={
               config && 'gap' in config
@@ -528,11 +524,7 @@ export const DriverInfoRow = memo((props: DriverRowInfoProps) => {
             key="interval"
             delta={interval}
             showForUndefined={
-              position === 1
-                ? hideLeaderGapIntervalLabels
-                  ? '-'
-                  : 'int'
-                : undefined
+              position === 1 && !hideLeaderGapIntervalLabels ? 'int' : undefined
             }
             decimalPlaces={
               config && 'interval' in config
@@ -597,7 +589,6 @@ export const DriverInfoRow = memo((props: DriverRowInfoProps) => {
             key="lapTimeDeltas"
             lapTimeDeltas={lapTimeDeltas}
             emptyLapDeltaPlaceholders={emptyLapDeltaPlaceholders}
-            isPlayer={isPlayer}
             compactMode={compactMode}
             decimalPlaces={
               config && 'lapTimeDeltas' in config
