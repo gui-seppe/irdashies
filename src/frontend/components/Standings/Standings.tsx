@@ -247,7 +247,7 @@ export const Standings = () => {
                     manufacturerCounts={manufacturerStats?.counts}
                     playerManufacturerEntry={manufacturerStats?.playerEntry}
                   />
-                  {settings?.stylingOptions?.columnHeaders && (
+                  {settings?.stylingOptions?.columnHeaders?.enabled && (
                     <ColumnHeaders
                       config={settings}
                       hasAnyDriverTag={hasAnyTag}
@@ -392,7 +392,8 @@ export const Standings = () => {
                           pitExitAfterSF={pitExitAfterSF}
                           hideCarManufacturer={hideCarManufacturer}
                           hideLeaderGapIntervalLabels={
-                            settings?.stylingOptions?.columnHeaders ?? false
+                            settings?.stylingOptions?.columnHeaders?.enabled ??
+                            false
                           }
                           compactMode={generalSettings?.compactMode}
                           p2pDisplayState={p2pDisplayStates[result.carIdx]}

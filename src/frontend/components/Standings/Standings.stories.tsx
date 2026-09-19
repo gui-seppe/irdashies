@@ -1644,7 +1644,7 @@ export const ColumnHeaders: Story = {
           fastestTime: { enabled: true },
           lapTimeDeltas: { enabled: true, numLaps: 3 },
           stylingOptions: {
-            columnHeaders,
+            columnHeaders: { enabled: columnHeaders },
           },
         },
       })(Story, context);

@@ -1224,13 +1224,14 @@ export const StandingsSettings = () => {
                       title="Show Column Names"
                       description="Show each enabled column name above its values"
                       enabled={
-                        settings.config.stylingOptions?.columnHeaders ?? false
+                        settings.config.stylingOptions?.columnHeaders
+                          ?.enabled ?? false
                       }
                       onToggle={(newValue) =>
                         handleConfigChange({
                           stylingOptions: {
                             ...settings.config.stylingOptions,
-                            columnHeaders: newValue,
+                            columnHeaders: { enabled: newValue },
                           },
                         })
                       }

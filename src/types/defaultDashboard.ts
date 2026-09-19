@@ -726,7 +726,7 @@ export const defaultDashboard: {
         stylingOptions: {
           badge: false,
           statusBadges: false,
-          columnHeaders: false,
+          columnHeaders: { enabled: false },
           driverPosition: { background: true },
           driverNumber: { background: true, border: true },
           flagContour: {
