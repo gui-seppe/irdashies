@@ -17,7 +17,10 @@ import { getWidget } from '../../WidgetIndex';
 import { getWidgetName } from '../../constants/widgetNames';
 import { ResizeIcon, XIcon } from '@phosphor-icons/react';
 import type { DashboardWidget } from '@irdashies/types';
-import { isWidgetDisabledForSim } from '@irdashies/types';
+import {
+  isWidgetDisabledForSim,
+  isWidgetHiddenInBuild,
+} from '@irdashies/types';
 import { useDragWidget, useResizeWidget } from '../WidgetContainer';
 import { ResizeHandles } from '../WidgetContainer/ResizeHandle';
 import logger from '@irdashies/utils/logger';
@@ -219,6 +222,7 @@ export const DashboardView = () => {
     const seen = new Set<string>();
     const filtered = currentDashboard.widgets.filter((w) => {
       if (!w.enabled || seen.has(w.id)) return false;
+      if (isWidgetHiddenInBuild(w.type ?? w.id)) return false;
       if (isWidgetDisabledForSim(simWidgetSupport, w.type ?? w.id, simulator))
         return false;
       seen.add(w.id);

@@ -485,3 +485,25 @@ html {
   --color-slate-900: var(--color-stone-900);
   --color-slate-950: var(--color-stone-950);
 }
+
+/* Grouped Standings/Relative rows (custom build). Neutral greys with the
+   default and black palettes; a colour palette tints them like the rest of
+   the overlay. */
+.overlay-window {
+  --grouped-row-even: rgb(24 24 27 / 0.92);
+  --grouped-row-odd: rgb(39 39 42 / 0.92);
+}
+.overlay-window:not(.overlay-theme-color-default):not(
+    .overlay-theme-color-black
+  ) {
+  --grouped-row-even: color-mix(
+    in srgb,
+    var(--color-slate-900) 92%,
+    transparent
+  );
+  --grouped-row-odd: color-mix(
+    in srgb,
+    var(--color-slate-800) 92%,
+    transparent
+  );
+}

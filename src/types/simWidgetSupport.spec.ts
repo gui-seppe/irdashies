@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { WIDGET_MAP } from '../frontend/WidgetIndex';
-import { widgetItems } from '../frontend/components/Settings/menuItems';
+import { allWidgetItems } from '../frontend/components/Settings/menuItems';
 import { SIMULATOR_IDS } from './simulators';
 import {
   DEFAULT_SIM_WIDGET_SUPPORT,
@@ -27,7 +27,7 @@ describe('per-simulator widget support', () => {
 
   it('names only widgets the settings menu can grey out', () => {
     const inMenu = new Set(
-      widgetItems.map((item) => item.widgetType).filter(Boolean)
+      allWidgetItems.map((item) => item.widgetType).filter(Boolean)
     );
     expect(allDefaultIds.filter((id) => !inMenu.has(id))).toEqual([]);
   });

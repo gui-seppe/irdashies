@@ -29,7 +29,12 @@ const ROWS: { name: string; props: PitStatusCellProps }[] = [
   },
   {
     name: 'Towing',
-    props: { carTrackSurface: 1, prevCarTrackSurface: 3, lastLap: 5 },
+    props: {
+      carTrackSurface: 1,
+      prevCarTrackSurface: 3,
+      lastLap: 5,
+      pitStopDuration: 24,
+    },
   },
   { name: 'DNF', props: { dnf: true } },
 ];

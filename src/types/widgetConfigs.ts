@@ -192,6 +192,15 @@ export interface StandingsConfig {
   sessionVisibility: SessionVisibilitySettings;
   stylingOptions?: StylingOptions;
   classHeaderStyle?: ClassHeaderStyle;
+  /**
+   * Size the widget to the longest driver name in the session (capped)
+   * instead of the full widget width, keeping its right edge in place.
+   */
+  compactWidth?: {
+    enabled: boolean;
+    /** Longest name, in characters, the column grows to (default 20). */
+    maxNameChars?: number;
+  };
 }
 
 export interface RelativeConfig {
@@ -230,6 +239,15 @@ export interface RelativeConfig {
   useLivePosition?: boolean;
   sessionVisibility: SessionVisibilitySettings;
   stylingOptions?: StylingOptions;
+  /**
+   * Size the widget to the longest driver name in the session (capped)
+   * instead of the full widget width, keeping its right edge in place.
+   */
+  compactWidth?: {
+    enabled: boolean;
+    /** Longest name, in characters, the column grows to (default 20). */
+    maxNameChars?: number;
+  };
 }
 
 export interface WeatherConfig {

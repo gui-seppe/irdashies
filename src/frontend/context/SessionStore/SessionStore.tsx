@@ -89,6 +89,13 @@ export const useWeekendInfoNumCarClasses = () =>
     (state) => state.session?.WeekendInfo?.NumCarClasses
   );
 
+/** Identifies the event (all its sessions); changes when joining another. */
+export const useWeekendInfoSubSessionID = () =>
+  useStore(
+    useSessionStore,
+    (state) => state.session?.WeekendInfo?.SubSessionID
+  );
+
 export const useWeekendInfoTeamRacing = () =>
   useStore(useSessionStore, (state) => state.session?.WeekendInfo?.TeamRacing);
 

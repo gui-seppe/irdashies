@@ -30,7 +30,7 @@ interface PitStatusCellProps {
   isMinimal?: boolean;
   /**
    * Flat style for grouped standings rows: plain text, no outlined badges.
-   * PIT glows green while moving down the pit lane and red once stopped in
+   * PIT glows yellow while moving down the pit lane and red once stopped in
    * the stall.
    */
   plain?: boolean;
@@ -79,6 +79,9 @@ export const PitStatusCell = memo(
       carTrackSurface != -1;
 
     if (plain) {
+      // Snug fit for the flat text (e.g. "L19  1:15"), in em so it follows
+      // the font size. A cell still grows if its content needs more.
+      const plainWidthClass = showPitTime ? 'w-[5.5em]' : 'w-[3.5em]';
       const duration =
         showPitTime && pitStopDuration
           ? formatTime(pitStopDuration, 'duration')
@@ -92,8 +95,12 @@ export const PitStatusCell = memo(
         label = 'DNF';
         textClass = 'text-red-500';
       } else if (tow) {
+        // A tow puts the car straight into its stall, which starts the pit
+        // clock, so the same running time shows how long the tow has taken.
         label = 'TOW';
-        textClass = 'text-orange-400 animate-pulse';
+        value = duration;
+        textClass = 'text-white';
+        style = pitGlowStyle('var(--color-red-500)');
       } else if (pit) {
         label = 'PIT';
         value = duration;
@@ -101,7 +108,7 @@ export const PitStatusCell = memo(
         style = pitGlowStyle(
           carTrackSurface === TrackLocation.InPitStall
             ? 'var(--color-red-500)'
-            : 'var(--color-green-500)'
+            : 'var(--color-yellow-500)'
         );
       } else if (out) {
         label = 'OUT';
@@ -117,7 +124,7 @@ export const PitStatusCell = memo(
       return (
         <td
           data-column="pitStatus"
-          className={`${widthClass} ${compactMode === 'ultra' ? '' : 'px-2'} align-middle whitespace-nowrap font-bold ${textClass}`}
+          className={`${plainWidthClass} ${compactMode === 'ultra' ? '' : 'px-2'} align-middle whitespace-nowrap [font-weight:bolder] ${textClass}`}
           style={style}
         >
           {label && (

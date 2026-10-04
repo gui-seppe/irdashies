@@ -1,5 +1,9 @@
 import { useMemo } from 'react';
-import { isWidgetDisabledForSim, type DashboardWidget } from '@irdashies/types';
+import {
+  isWidgetDisabledForSim,
+  isWidgetHiddenInBuild,
+  type DashboardWidget,
+} from '@irdashies/types';
 import { useDashboard } from '../DashboardContext/DashboardContext';
 import { useActiveSimulator } from './useActiveSimulator';
 import { useSimWidgetSupport } from './useSimWidgetSupport';
@@ -65,6 +69,7 @@ export const useWidgetsForThisDisplay = (
       currentDashboard?.widgets.filter(
         (widget) =>
           widget.enabled &&
+          !isWidgetHiddenInBuild(widget.type ?? widget.id) &&
           !isWidgetDisabledForSim(
             simWidgetSupport,
             widget.type ?? widget.id,

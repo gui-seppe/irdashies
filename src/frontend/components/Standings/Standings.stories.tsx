@@ -1853,3 +1853,11 @@ export const ColumnHeaders: Story = {
     },
   ],
 };
+
+export const CompactWidth: Story = {
+  decorators: [
+    TelemetryDecoratorWithConfig('/test-data/1731391056221', {
+      standings: { compactWidth: { enabled: true } },
+    }),
+  ],
+};

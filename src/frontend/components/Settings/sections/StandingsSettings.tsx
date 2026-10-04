@@ -25,6 +25,13 @@ import {
   SessionBarItemConfig,
 } from '../components/SessionBarItemsList';
 
+/**
+ * Styling toggles for the original row look. This build draws Standings and
+ * Relative rows in its own grouped style, where these have no effect, so they
+ * are hidden. Saved values are kept; flip to true to show them again.
+ */
+const LEGACY_ROW_STYLE_OPTIONS = false;
+
 const SETTING_ID = 'standings';
 
 interface SortableSetting {
@@ -412,6 +419,9 @@ const DisplaySettingsList = ({
                       <BadgeFormatPreview
                         key={format}
                         format={format}
+                        showIratingChange={
+                          settings.config.iratingChange?.enabled ?? false
+                        }
                         selected={
                           (
                             configValue as {
@@ -1053,6 +1063,44 @@ export const StandingsSettings = () => {
               {/* STYLING TAB */}
               {activeTab === 'styling' && (
                 <>
+                  <SettingsSection title="Width">
+                    <SettingToggleRow
+                      title="Compact Width"
+                      description="Shrink the widget to fit the longest driver name in the session, keeping the right edge in place. The width stays fixed for the event."
+                      enabled={settings.config.compactWidth?.enabled ?? false}
+                      onToggle={(newValue) =>
+                        handleConfigChange({
+                          compactWidth: {
+                            ...settings.config.compactWidth,
+                            enabled: newValue,
+                          },
+                        })
+                      }
+                    />
+                    {(settings.config.compactWidth?.enabled ?? false) && (
+                      <SettingSliderRow
+                        title="Max Name Length"
+                        description="Longest name the column grows to; longer names are cut off. Keeps one very long name from making the widget wide."
+                        value={settings.config.compactWidth?.maxNameChars ?? 20}
+                        units=" chars"
+                        min={10}
+                        max={40}
+                        step={1}
+                        onChange={(v) =>
+                          handleConfigChange({
+                            compactWidth: {
+                              enabled:
+                                settings.config.compactWidth?.enabled ?? false,
+                              maxNameChars: v,
+                            },
+                          })
+                        }
+                      />
+                    )}
+                  </SettingsSection>
+
+                  <SettingDivider />
+
                   <SettingsSection title="Scale">
                     <SettingSliderRow
                       title="Widget Scale"
@@ -1071,8 +1119,8 @@ export const StandingsSettings = () => {
                   </SettingsSection>
                   <SettingsSection title="Class Header">
                     <SettingToggleRow
-                      title="Class Name Background"
-                      description="Show a colored background on the class name badge"
+                      title="Class Header Gradient"
+                      description="Fade the class color in behind the class header"
                       enabled={
                         settings.config.classHeaderStyle?.className
                           ?.colorBackground ?? true
@@ -1086,22 +1134,24 @@ export const StandingsSettings = () => {
                         })
                       }
                     />
-                    <SettingToggleRow
-                      title="Class Info Background"
-                      description="Show a colored background on the SOF and driver count badges"
-                      enabled={
-                        settings.config.classHeaderStyle?.classInfo
-                          ?.colorBackground ?? true
-                      }
-                      onToggle={(newValue) =>
-                        handleConfigChange({
-                          classHeaderStyle: {
-                            ...settings.config.classHeaderStyle,
-                            classInfo: { colorBackground: newValue },
-                          },
-                        })
-                      }
-                    />
+                    {LEGACY_ROW_STYLE_OPTIONS && (
+                      <SettingToggleRow
+                        title="Class Info Background"
+                        description="Show a colored background on the SOF and driver count badges"
+                        enabled={
+                          settings.config.classHeaderStyle?.classInfo
+                            ?.colorBackground ?? true
+                        }
+                        onToggle={(newValue) =>
+                          handleConfigChange({
+                            classHeaderStyle: {
+                              ...settings.config.classHeaderStyle,
+                              classInfo: { colorBackground: newValue },
+                            },
+                          })
+                        }
+                      />
+                    )}
                     <SettingToggleRow
                       title="Bottom Border"
                       description="Show a colored bottom border beneath the class header row"
@@ -1291,70 +1341,75 @@ export const StandingsSettings = () => {
 
                   <SettingDivider />
 
-                  <SettingsSection title="Driver Position">
-                    <SettingToggleRow
-                      title="Position Background"
-                      description="Highlight the player's position cell with a colored background"
-                      enabled={
-                        settings.config.stylingOptions?.driverPosition
-                          ?.background ?? true
-                      }
-                      onToggle={(newValue) =>
-                        handleConfigChange({
-                          stylingOptions: {
-                            ...settings.config.stylingOptions,
-                            driverPosition: { background: newValue },
-                          },
-                        })
-                      }
-                    />
-                  </SettingsSection>
+                  {LEGACY_ROW_STYLE_OPTIONS && (
+                    <>
+                      <SettingsSection title="Driver Position">
+                        <SettingToggleRow
+                          title="Position Background"
+                          description="Highlight the player's position cell with a colored background"
+                          enabled={
+                            settings.config.stylingOptions?.driverPosition
+                              ?.background ?? true
+                          }
+                          onToggle={(newValue) =>
+                            handleConfigChange({
+                              stylingOptions: {
+                                ...settings.config.stylingOptions,
+                                driverPosition: { background: newValue },
+                              },
+                            })
+                          }
+                        />
+                      </SettingsSection>
 
-                  <SettingDivider />
+                      <SettingDivider />
 
-                  <SettingsSection title="Car Number">
-                    <SettingToggleRow
-                      title="Number Background"
-                      description="Show a colored background on the car number cell"
-                      enabled={
-                        settings.config.stylingOptions?.driverNumber
-                          ?.background ?? true
-                      }
-                      onToggle={(newValue) =>
-                        handleConfigChange({
-                          stylingOptions: {
-                            ...settings.config.stylingOptions,
-                            driverNumber: {
-                              ...settings.config.stylingOptions?.driverNumber,
-                              background: newValue,
-                            },
-                          },
-                        })
-                      }
-                    />
-                    <SettingToggleRow
-                      title="Number Left Border"
-                      description="Show a colored left border on the car number cell"
-                      enabled={
-                        settings.config.stylingOptions?.driverNumber?.border ??
-                        true
-                      }
-                      onToggle={(newValue) =>
-                        handleConfigChange({
-                          stylingOptions: {
-                            ...settings.config.stylingOptions,
-                            driverNumber: {
-                              ...settings.config.stylingOptions?.driverNumber,
-                              border: newValue,
-                            },
-                          },
-                        })
-                      }
-                    />
-                  </SettingsSection>
+                      <SettingsSection title="Car Number">
+                        <SettingToggleRow
+                          title="Number Background"
+                          description="Show a colored background on the car number cell"
+                          enabled={
+                            settings.config.stylingOptions?.driverNumber
+                              ?.background ?? true
+                          }
+                          onToggle={(newValue) =>
+                            handleConfigChange({
+                              stylingOptions: {
+                                ...settings.config.stylingOptions,
+                                driverNumber: {
+                                  ...settings.config.stylingOptions
+                                    ?.driverNumber,
+                                  background: newValue,
+                                },
+                              },
+                            })
+                          }
+                        />
+                        <SettingToggleRow
+                          title="Number Left Border"
+                          description="Show a colored left border on the car number cell"
+                          enabled={
+                            settings.config.stylingOptions?.driverNumber
+                              ?.border ?? true
+                          }
+                          onToggle={(newValue) =>
+                            handleConfigChange({
+                              stylingOptions: {
+                                ...settings.config.stylingOptions,
+                                driverNumber: {
+                                  ...settings.config.stylingOptions
+                                    ?.driverNumber,
+                                  border: newValue,
+                                },
+                              },
+                            })
+                          }
+                        />
+                      </SettingsSection>
 
-                  <SettingDivider />
-
+                      <SettingDivider />
+                    </>
+                  )}
                   <SettingsSection title="Badges">
                     <SettingToggleRow
                       title="Minimal License Badge"
@@ -1369,21 +1424,23 @@ export const StandingsSettings = () => {
                         })
                       }
                     />
-                    <SettingToggleRow
-                      title="Minimal Status Badges"
-                      description="Use muted borders for PIT, OUT, DNF and other status badges"
-                      enabled={
-                        settings.config.stylingOptions?.statusBadges ?? false
-                      }
-                      onToggle={(newValue) =>
-                        handleConfigChange({
-                          stylingOptions: {
-                            ...settings.config.stylingOptions,
-                            statusBadges: newValue,
-                          },
-                        })
-                      }
-                    />
+                    {LEGACY_ROW_STYLE_OPTIONS && (
+                      <SettingToggleRow
+                        title="Minimal Status Badges"
+                        description="Use muted borders for PIT, OUT, DNF and other status badges"
+                        enabled={
+                          settings.config.stylingOptions?.statusBadges ?? false
+                        }
+                        onToggle={(newValue) =>
+                          handleConfigChange({
+                            stylingOptions: {
+                              ...settings.config.stylingOptions,
+                              statusBadges: newValue,
+                            },
+                          })
+                        }
+                      />
+                    )}
                     <SettingToggleRow
                       title="Minimal Lap Count Badge"
                       description="Remove the border from the lap count badge"

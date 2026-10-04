@@ -1,12 +1,17 @@
+import { DriverRatingBadge } from '../../shared/DriverRatingBadge/DriverRatingBadge';
+
 // Badge preview component to show different formats
 export const BadgeFormatPreview = ({
   format,
   selected,
   onClick,
+  showIratingChange = false,
 }: {
   format: string;
   selected: boolean;
   onClick: () => void;
+  /** Preview the iRating gain inside the pill, as the overlay shows it. */
+  showIratingChange?: boolean;
 }) => {
   const renderPreview = () => {
     switch (format) {
@@ -34,15 +39,14 @@ export const BadgeFormatPreview = ({
           </div>
         );
       case 'license-color-rating-bw':
+        // The real badge, so the preview always matches the overlay's pill.
         return (
-          <div className="flex gap-1 items-center">
-            <div className="text-white text-nowrap border-2 px-1 rounded-md text-xs leading-tight border-green-500 bg-green-800">
-              B 3.8
-            </div>
-            <div className="bg-white/10 text-white border-2 border-transparent px-1 rounded-md text-xs leading-tight">
-              1.4k
-            </div>
-          </div>
+          <DriverRatingBadge
+            license="B 3.80"
+            rating={1412}
+            format="license-color-rating-bw"
+            iratingChange={showIratingChange ? 23 : undefined}
+          />
         );
       case 'rating-only-color-rating-bw':
         return (

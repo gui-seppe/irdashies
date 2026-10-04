@@ -117,7 +117,7 @@ describe('PitStatusCell', () => {
     const pitCell = (container: HTMLElement) =>
       container.querySelector<HTMLElement>('td[data-column="pitStatus"]');
 
-    it('glows green while moving down the pit lane, with the running time', () => {
+    it('glows yellow while moving down the pit lane, with the running time', () => {
       const { container } = renderInTable(
         <PitStatusCell
           plain
@@ -131,7 +131,7 @@ describe('PitStatusCell', () => {
 
       const td = pitCell(container);
       expect(td?.textContent).toBe('PIT6');
-      expect(td?.style.boxShadow).toContain('--color-green-500');
+      expect(td?.style.boxShadow).toContain('--color-yellow-500');
       expect(td?.querySelector('.border-2')).toBeNull();
     });
 
@@ -151,6 +151,25 @@ describe('PitStatusCell', () => {
       const td = pitCell(container);
       expect(td?.textContent).toBe('PIT15');
       expect(td?.style.boxShadow).toContain('--color-red-500');
+    });
+
+    it('glows red with the running time while being towed', () => {
+      const { container } = renderInTable(
+        <PitStatusCell
+          plain
+          showPitTime
+          carTrackSurface={1}
+          prevCarTrackSurface={3}
+          lastLap={5}
+          pitStopDuration={24}
+          currentSessionType="Race"
+        />
+      );
+
+      const td = pitCell(container);
+      expect(td?.textContent).toBe('TOW24');
+      expect(td?.style.boxShadow).toContain('--color-red-500');
+      expect(td?.className).not.toContain('animate-pulse');
     });
 
     it('shows the last stop lap and time in yellow after the stop', () => {

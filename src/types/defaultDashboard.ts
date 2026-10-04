@@ -58,6 +58,9 @@ export const defaultDashboard: {
         background: {
           opacity: 0,
         },
+        compactWidth: {
+          enabled: false,
+        },
         foreground: {
           opacity: 70,
         },
@@ -460,7 +463,10 @@ export const defaultDashboard: {
         buffer: 3,
         useLivePosition: false,
         background: {
-          opacity: 80,
+          opacity: 0,
+        },
+        compactWidth: {
+          enabled: false,
         },
         foreground: {
           opacity: 70,
@@ -1589,7 +1595,7 @@ export const defaultDashboard: {
   generalSettings: {
     fontType: 'lato',
     fontSize: 'sm',
-    fontWeight: 'normal',
+    fontWeight: 'semibold',
     colorPalette: 'black',
     showOnlyWhenOnTrack: true,
     highlightColor: 960745,

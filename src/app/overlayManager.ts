@@ -9,7 +9,10 @@ import type {
   DashboardLayout,
   ContainerBoundsInfo,
 } from '@irdashies/types';
-import { isWidgetDisabledForSim } from '@irdashies/types';
+import {
+  isWidgetDisabledForSim,
+  isWidgetHiddenInBuild,
+} from '@irdashies/types';
 import { getSimWidgetSupport } from './storage/simWidgetSupport';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -109,6 +112,7 @@ export class OverlayManager {
     enabled: boolean;
   }): boolean {
     if (!widget.enabled) return false;
+    if (isWidgetHiddenInBuild(widget.type ?? widget.id)) return false;
     return !isWidgetDisabledForSim(
       getSimWidgetSupport(),
       widget.type ?? widget.id,

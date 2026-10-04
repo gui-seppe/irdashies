@@ -359,6 +359,25 @@ export const Primary: Story = {
   ],
 };
 
+export const CompactWidth: Story = {
+  decorators: [
+    TelemetryDecoratorWithConfig(undefined, {
+      relative: {
+        compactWidth: { enabled: true },
+        headerBar: { enabled: true },
+        footerBar: { enabled: true },
+        sessionVisibility: {
+          race: true,
+          loneQualify: true,
+          openQualify: true,
+          practice: true,
+          offlineTesting: true,
+        },
+      },
+    }),
+  ],
+};
+
 export const DynamicTelemetry: Story = {
   decorators: [
     (Story, context) => {

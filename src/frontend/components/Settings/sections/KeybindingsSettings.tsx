@@ -5,6 +5,7 @@ import type {
   KeybindingEntry,
   KeybindingsMap,
 } from '@irdashies/types';
+import { isWidgetHiddenInBuild } from '@irdashies/types';
 import {
   isGamepadBinding,
   isWidgetToggleActionId,
@@ -368,9 +369,9 @@ export const KeybindingsSettings = () => {
     );
     return index === -1 ? widgetItems.length : index;
   };
-  const widgets = [...(currentDashboard?.widgets ?? [])].sort(
-    (a, b) => menuOrder(a) - menuOrder(b)
-  );
+  const widgets = [...(currentDashboard?.widgets ?? [])]
+    .filter((widget) => !isWidgetHiddenInBuild(widget.type ?? widget.id))
+    .sort((a, b) => menuOrder(a) - menuOrder(b));
 
   return (
     <div className="flex flex-col h-full">

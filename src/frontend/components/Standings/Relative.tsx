@@ -19,6 +19,7 @@ import {
   useDriverRelatives,
   useHighlightColor,
   useDriverTagMap,
+  useCompactNameWidth,
 } from './hooks';
 import { SessionBar } from './components/SessionBar/SessionBar';
 import { TitleBar } from './components/TitleBar/TitleBar';
@@ -43,6 +44,14 @@ export const Relative = () => {
   );
   const highlightColor = useHighlightColor();
   const { tagMap, hasAnyTag } = useDriverTagMap(settings?.driverTag?.enabled);
+  // Compact width: size to the longest name in the session, pinned right.
+  const compactWidth = !!settings?.compactWidth?.enabled;
+  const { nameWidth, probe: nameWidthProbe } = useCompactNameWidth(
+    compactWidth,
+    settings?.driverName?.nameFormat,
+    settings?.driverName?.removeNumbersFromName ?? false,
+    settings?.compactWidth?.maxNameChars
+  );
   const numCarClasses = useWeekendInfoNumCarClasses();
   const isMultiClass = (numCarClasses ?? 0) > 1;
   const isSessionVisible = useSessionVisibility(settings?.sessionVisibility);
@@ -86,9 +95,17 @@ export const Relative = () => {
   const isCompact =
     generalSettings?.compactMode === 'compact' ||
     generalSettings?.compactMode === 'ultra';
-  const tableBorderSpacing = isCompact
-    ? 'border-spacing-y-0'
-    : 'border-spacing-y-0.5';
+
+  // Header and footer join the rows into one card, so the rows square off
+  // the corners that touch them.
+  const showHeader = !!(
+    settings?.headerBar &&
+    (settings.headerBar.enabled ?? false)
+  );
+  const showFooter = !!(
+    settings?.footerBar &&
+    (settings.footerBar.enabled ?? true)
+  );
 
   // Always render 2 * buffer + 1 rows (buffer above + player + buffer below)
   const totalRows = 2 * buffer + 1;
@@ -145,17 +162,29 @@ export const Relative = () => {
           hasAnyDriverTag={hasAnyTag}
           hasAnyCountryFlag={hasAnyCountryFlag}
           compactMode={generalSettings?.compactMode}
+          nameWidth={nameWidth}
+          groupIndex={index}
+          isFirstInGroup={index === 0 && !showHeader}
+          isLastInGroup={index === totalRows - 1 && !showFooter}
         />
       ));
     }
 
+    // Center the player in the middle of the display
+    const centerIndex = Math.floor(totalRows / 2); // buffer
+    const resultAt = (index: number) =>
+      standings[index - centerIndex + playerIndex];
+
     // Create an array of fixed size with placeholder rows
     return Array.from({ length: totalRows }, (_, index) => {
-      // Calculate the actual index in the standings array
-      // Center the player in the middle of the display
-      const centerIndex = Math.floor(totalRows / 2); // buffer
-      const actualIndex = index - centerIndex + playerIndex;
-      const result = standings[actualIndex];
+      const result = resultAt(index);
+      const groupProps = {
+        groupIndex: index,
+        // Empty slots show as blank rows in the card, so the corners go on
+        // the card's ends: the first/last row, unless a bar is attached there.
+        isFirstInGroup: index === 0 && !showHeader,
+        isLastInGroup: index === totalRows - 1 && !showFooter,
+      };
 
       if (!result) {
         // If no result, render a dummy row with visibility hidden
@@ -203,6 +232,8 @@ export const Relative = () => {
             hasAnyDriverTag={hasAnyTag}
             hasAnyCountryFlag={hasAnyCountryFlag}
             compactMode={generalSettings?.compactMode}
+            nameWidth={nameWidth}
+            {...groupProps}
           />
         );
       }
@@ -280,7 +311,9 @@ export const Relative = () => {
           deltaDecimalPlaces={settings?.delta?.precision}
           hideCarManufacturer={hideCarManufacturer}
           compactMode={generalSettings?.compactMode}
+          nameWidth={nameWidth}
           p2pDisplayState={p2pDisplayStates[result.carIdx]}
+          {...groupProps}
         />
       );
     });
@@ -301,8 +334,11 @@ export const Relative = () => {
     lapTimeDeltasEnabled,
     numLapDeltas,
     lapDeltasByCarIdx,
+    nameWidth,
     pitStopDurations,
     pitExitAfterSF,
+    showHeader,
+    showFooter,
   ]);
 
   if (!isSessionVisible) return <></>;
@@ -316,30 +352,32 @@ export const Relative = () => {
   if (playerIndex === -1) {
     return (
       <FlagContour
+        fitWidth={compactWidth}
         compactMode={isCompact}
         flags={{ enabled: flagContourEnabled }}
         flagColor={flagColor}
         backgroundOpacity={settings?.background?.opacity ?? 0}
         borderWidth={borderWidth}
       >
+        {nameWidthProbe}
         <TitleBar titleBarSettings={settings?.titleBar} />
-        {settings?.headerBar && (settings.headerBar.enabled ?? false) && (
+        {showHeader && settings?.headerBar && (
           <SessionBar
             settings={settings.headerBar}
             opacity={settings?.foreground?.opacity}
             position="header"
+            variant="attached"
           />
         )}
-        <table
-          className={`w-full table-auto text-sm border-separate ${tableBorderSpacing}`}
-        >
+        <table className="w-full table-auto text-sm tabular-nums border-separate border-spacing-0">
           <tbody>{rows}</tbody>
         </table>
-        {settings?.footerBar && (settings.footerBar.enabled ?? true) && (
+        {showFooter && settings?.footerBar && (
           <SessionBar
             settings={settings.footerBar}
             opacity={settings?.foreground?.opacity}
             position="footer"
+            variant="attached"
           />
         )}
       </FlagContour>
@@ -348,30 +386,32 @@ export const Relative = () => {
 
   return (
     <FlagContour
+      fitWidth={compactWidth}
       compactMode={isCompact}
       flags={{ enabled: flagContourEnabled }}
       flagColor={flagColor}
       backgroundOpacity={settings?.background?.opacity ?? 0}
       borderWidth={borderWidth}
     >
+      {nameWidthProbe}
       <TitleBar titleBarSettings={settings?.titleBar} />
-      {settings?.headerBar && (settings.headerBar.enabled ?? false) && (
+      {showHeader && settings?.headerBar && (
         <SessionBar
           settings={settings.headerBar}
           opacity={settings?.foreground?.opacity}
           position="header"
+          variant="attached"
         />
       )}
-      <table
-        className={`w-full table-auto text-sm border-separate ${tableBorderSpacing}`}
-      >
+      <table className="w-full table-auto text-sm tabular-nums border-separate border-spacing-0">
         <tbody>{rows}</tbody>
       </table>
-      {settings?.footerBar && (settings.footerBar.enabled ?? true) && (
+      {showFooter && settings?.footerBar && (
         <SessionBar
           settings={settings.footerBar}
           opacity={settings?.foreground?.opacity}
           position="footer"
+          variant="attached"
         />
       )}
     </FlagContour>

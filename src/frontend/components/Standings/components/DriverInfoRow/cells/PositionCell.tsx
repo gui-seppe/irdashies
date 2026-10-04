@@ -30,7 +30,7 @@ export const PositionCell = memo(
         : '';
     const textColor = offTrack
       ? 'text-yellow-900'
-      : `text-white${plain ? ' font-bold' : ''}`;
+      : `text-white${plain ? ' [font-weight:bolder]' : ''}`;
     const pxClass =
       compactMode === 'ultra'
         ? 'min-w-[2ch]'

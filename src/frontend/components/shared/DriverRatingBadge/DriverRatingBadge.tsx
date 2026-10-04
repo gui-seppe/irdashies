@@ -140,7 +140,7 @@ export const DriverRatingBadge = ({
         // Default format: one pill, colored license segment + B&W rating
         return (
           <div className="flex items-center mx-2">
-            <div className="flex items-stretch overflow-hidden rounded-full text-xs font-bold leading-tight text-white text-nowrap tabular-nums">
+            <div className="flex items-stretch overflow-hidden rounded-full text-xs [font-weight:bolder] leading-tight text-white text-nowrap tabular-nums">
               <span
                 className={`pl-2 pr-1.5 py-px min-w-[3.4em] text-center ${(isMinimal ? minimalColorMap : pillColorMap)[licenseLevel] ?? ''}`}
               >

@@ -7,6 +7,8 @@ export interface FlagContourProps {
   flagColor?: string;
   backgroundOpacity?: number;
   borderWidth?: number;
+  /** Shrink to the content and keep the right edge in place. */
+  fitWidth?: boolean;
 }
 
 export const FlagContour = ({
@@ -16,8 +18,9 @@ export const FlagContour = ({
   flagColor,
   backgroundOpacity = 0,
   borderWidth = 5,
+  fitWidth = false,
 }: FlagContourProps) => {
-  const containerClassName = `w-full bg-slate-800/(--bg-opacity) rounded-sm ${
+  const containerClassName = `${fitWidth ? 'relative ml-auto w-fit max-w-full' : 'w-full'} bg-slate-800/(--bg-opacity) rounded-sm ${
     !compactMode ? 'p-2' : ''
   } overflow-hidden ${flags.enabled ? 'border-solid' : ''}`;
 

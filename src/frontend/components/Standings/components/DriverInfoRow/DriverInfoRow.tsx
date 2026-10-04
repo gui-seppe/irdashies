@@ -91,12 +91,18 @@ interface DriverRowInfoProps {
    * the left edge with a gradient fading out behind the position, and
    * rounded corners on the first and last row.
    */
+  /** Fixed name column width (compact width mode), see useCompactNameWidth. */
+  nameWidth?: string;
   groupIndex?: number;
+  /** Defaults to groupIndex === 0. */
+  isFirstInGroup?: boolean;
   isLastInGroup?: boolean;
 }
 
-const ROW_BG_EVEN = 'rgb(24 24 27 / 0.92)'; // zinc-900
-const ROW_BG_ODD = 'rgb(39 39 42 / 0.92)'; // zinc-800
+// Set per colour palette in theme.css; the fallbacks (zinc-900/800) cover
+// renders outside the overlay theme, such as Storybook.
+const ROW_BG_EVEN = 'var(--grouped-row-even, rgb(24 24 27 / 0.92))';
+const ROW_BG_ODD = 'var(--grouped-row-odd, rgb(39 39 42 / 0.92))';
 
 // Helper function to provide dummy data for hidden rows
 const getDummyData = () => ({
@@ -250,7 +256,9 @@ export const DriverInfoRow = memo((props: DriverRowInfoProps) => {
     currentLap,
     lapCountUnknown,
     hideLeaderGapIntervalLabels,
+    nameWidth,
     groupIndex,
+    isFirstInGroup = groupIndex === 0,
     isLastInGroup,
   } = displayProps;
   const isGrouped = groupIndex !== undefined;
@@ -395,6 +403,7 @@ export const DriverInfoRow = memo((props: DriverRowInfoProps) => {
             nameDisplay={tagSettings?.display?.nameDisplay}
             alternateFrequency={tagSettings?.display?.alternateFrequency}
             compactMode={compactMode}
+            fixedWidth={nameWidth}
           />
         ),
       },
@@ -740,6 +749,7 @@ export const DriverInfoRow = memo((props: DriverRowInfoProps) => {
     currentLap,
     lapCountUnknown,
     isGrouped,
+    nameWidth,
   ]);
 
   const groupedRowStyle = useMemo(() => {
@@ -749,6 +759,15 @@ export const DriverInfoRow = memo((props: DriverRowInfoProps) => {
       getTailwindStyle(undefined, highlightColor, false)
     );
     const base = groupIndex % 2 === 0 ? ROW_BG_EVEN : ROW_BG_ODD;
+    // An empty slot is a blank row: no class bar or gradient.
+    if (hidden) {
+      return {
+        '--class-color': 'transparent',
+        '--row-bg': base,
+        '--row-grad-a': 'none',
+        '--row-grad-b': 'none',
+      } as CSSProperties;
+    }
     const mix = (pct: number) =>
       `color-mix(in srgb, ${classColor} ${pct}%, transparent)`;
     return {
@@ -760,7 +779,7 @@ export const DriverInfoRow = memo((props: DriverRowInfoProps) => {
       '--row-grad-a': `linear-gradient(90deg, ${mix(50)}, ${mix(18)})`,
       '--row-grad-b': `linear-gradient(90deg, ${mix(18)}, transparent)`,
     } as CSSProperties;
-  }, [isGrouped, tailwindStyles, highlightColor, groupIndex, isPlayer]);
+  }, [isGrouped, tailwindStyles, highlightColor, groupIndex, isPlayer, hidden]);
 
   if (isGrouped) {
     const cellPy =
@@ -774,24 +793,30 @@ export const DriverInfoRow = memo((props: DriverRowInfoProps) => {
         key={carIdx}
         style={groupedRowStyle}
         className={[
-          'text-sm font-semibold *:bg-(--row-bg)',
+          // No fixed weight: rows follow the general font weight setting, and
+          // emphasised cells use `bolder` (one step heavier than it).
+          'text-sm *:bg-(--row-bg)',
           '[&>td:first-child]:bg-(image:--row-grad-a) [&>td:nth-child(2)]:bg-(image:--row-grad-b)',
           '[&>td:first-child]:[box-shadow:inset_4px_0_0_var(--class-color)] [&>td:first-child]:pl-3',
           cellPy,
-          groupIndex === 0
+          isFirstInGroup
             ? '[&>td:first-child]:rounded-tl-md [&>td:last-child]:rounded-tr-md'
             : '',
           isLastInGroup
             ? '[&>td:first-child]:rounded-bl-md [&>td:last-child]:rounded-br-md'
             : '',
-          !isPlayer && isLappingAhead
-            ? 'text-red-400'
-            : !isPlayer && isLapped
-              ? 'text-blue-400'
-              : !onTrack || onPitRoad
-                ? 'text-white/55'
-                : 'text-white',
-          hidden ? 'invisible' : '',
+          hidden
+            ? 'text-transparent'
+            : !isPlayer && isLappingAhead
+              ? 'text-red-400'
+              : !isPlayer && isLapped
+                ? 'text-blue-400'
+                : !onTrack || onPitRoad
+                  ? 'text-white/55'
+                  : 'text-white',
+          // Empty slots keep their row background so the card stays whole,
+          // with the placeholder content hidden.
+          hidden ? '[&_*]:invisible' : '',
         ].join(' ')}
       >
         {columnDefinitions.map((column) => column.component)}

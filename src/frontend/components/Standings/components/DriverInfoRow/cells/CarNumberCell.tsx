@@ -28,10 +28,8 @@ export const CarNumberCell = memo(
         >
           {/* Small muted '#' and a class-tinted italic number, so it doesn't
               read as a second position column. */}
-          <span className="inline-flex min-w-[3.5ch] items-baseline justify-end italic font-bold">
-            <span className="mr-px text-[0.75em] font-semibold text-white/40">
-              #
-            </span>
+          <span className="inline-flex min-w-[3.5ch] items-baseline justify-end italic [font-weight:bolder]">
+            <span className="mr-px text-[0.75em] text-white/40">#</span>
             <span
               style={{
                 color:

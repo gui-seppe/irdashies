@@ -8,6 +8,10 @@ import {
   InfoIcon,
 } from '@phosphor-icons/react';
 import type { Icon } from '@phosphor-icons/react';
+import {
+  BUILD_HIDDEN_SETTINGS_PAGES,
+  isWidgetHiddenInBuild,
+} from '@irdashies/types';
 
 export interface MenuItem {
   to: string;
@@ -17,7 +21,8 @@ export interface MenuItem {
   icon?: Icon;
 }
 
-export const generalItems: MenuItem[] = [
+/** Every general settings page, including ones this build hides. */
+export const allGeneralItems: MenuItem[] = [
   {
     to: '/settings/general',
     path: '/general',
@@ -50,7 +55,8 @@ export const generalItems: MenuItem[] = [
   },
 ];
 
-export const widgetItems: MenuItem[] = [
+/** Every widget page, including ones this build hides. */
+export const allWidgetItems: MenuItem[] = [
   {
     to: '/settings/battle',
     path: '/battle',
@@ -205,6 +211,14 @@ export const widgetItems: MenuItem[] = [
   },
 ];
 
+// This build only shows the pages and widgets it uses (see customBuild.ts).
+export const generalItems = allGeneralItems.filter(
+  (item) => !BUILD_HIDDEN_SETTINGS_PAGES.includes(item.path)
+);
+export const widgetItems = allWidgetItems.filter(
+  (item) => !isWidgetHiddenInBuild(item.widgetType)
+);
+
 export const bottomItems: MenuItem[] = [
   {
     to: '/settings/advanced',
@@ -221,7 +235,7 @@ export const bottomItems: MenuItem[] = [
  */
 export function widgetLabel(widgetType: string): string {
   return (
-    widgetItems.find((item) => item.widgetType === widgetType)?.label ??
+    allWidgetItems.find((item) => item.widgetType === widgetType)?.label ??
     widgetType
   );
 }

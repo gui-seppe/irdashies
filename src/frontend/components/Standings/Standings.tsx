@@ -11,6 +11,7 @@ import {
   useHighlightColor,
   useDriverTagMap,
   useManufacturerCounts,
+  useCompactNameWidth,
   useSessionLapCount,
 } from './hooks';
 import {
@@ -455,6 +456,15 @@ export const Standings = () => {
     generalSettings?.compactMode === 'ultra';
   const scale = Math.min(200, Math.max(50, settings?.scale ?? 100)) / 100;
 
+  // Compact width: size to the longest name in the session, pinned right.
+  const compactWidth = !!settings?.compactWidth?.enabled;
+  const { nameWidth, probe: nameWidthProbe } = useCompactNameWidth(
+    compactWidth,
+    settings?.driverName?.nameFormat,
+    settings?.driverName?.removeNumbersFromName ?? false,
+    settings?.compactWidth?.maxNameChars
+  );
+
   if (!isSessionVisible) return <></>;
 
   // Show only when on track setting
@@ -465,20 +475,29 @@ export const Standings = () => {
   return (
     <div className="w-full h-full overflow-hidden">
       <div
-        className={`bg-slate-800/(--bg-opacity) rounded-sm text-white ${!isCompact ? 'p-2' : ''}`}
+        className={`relative bg-slate-800/(--bg-opacity) rounded-sm text-white ${!isCompact ? 'p-2' : ''}`}
         style={{
           ['--bg-opacity' as string]: `${settings?.background?.opacity ?? 0}%`,
-          width: `${100 / scale}%`,
           transform: `scale(${scale})`,
-          transformOrigin: 'top left',
+          ...(compactWidth
+            ? {
+                // Shrink to the content and keep the right edge in place.
+                width: 'fit-content',
+                maxWidth: `${100 / scale}%`,
+                marginLeft: 'auto',
+                transformOrigin: 'top right',
+              }
+            : { width: `${100 / scale}%`, transformOrigin: 'top left' }),
         }}
       >
+        {nameWidthProbe}
         <TitleBar titleBarSettings={settings?.titleBar} />
         {settings?.headerBar && (settings.headerBar.enabled ?? true) && (
           <SessionBar
             settings={settings.headerBar}
             opacity={settings?.foreground?.opacity}
             position="header"
+            variant="floating"
           />
         )}
         <table className="w-full table-auto text-sm tabular-nums border-separate border-spacing-0">
@@ -666,6 +685,7 @@ export const Standings = () => {
                           }
                           compactMode={generalSettings?.compactMode}
                           p2pDisplayState={p2pDisplayStates[result.carIdx]}
+                          nameWidth={nameWidth}
                           groupIndex={driverIndex}
                           isLastInGroup={
                             driverIndex === classStandings.length - 1
@@ -676,12 +696,21 @@ export const Standings = () => {
                   })}
                   {standings
                     .slice(index + 1)
-                    .some(([, content]) => content.length > 0) &&
-                    !isCompact && (
-                      <tr>
-                        <td colSpan={100} className="h-2"></td>
-                      </tr>
-                    )}
+                    .some(([, content]) => content.length > 0) && (
+                    // Gap before the next class block, in every compact mode.
+                    <tr>
+                      <td
+                        colSpan={100}
+                        className={
+                          generalSettings?.compactMode === 'ultra'
+                            ? 'h-1'
+                            : isCompact
+                              ? 'h-1.5'
+                              : 'h-2'
+                        }
+                      ></td>
+                    </tr>
+                  )}
                 </Fragment>
               ) : null;
             })}
@@ -692,6 +721,7 @@ export const Standings = () => {
             settings={settings.footerBar}
             opacity={settings?.foreground?.opacity}
             position="footer"
+            variant="floating"
           />
         )}
       </div>

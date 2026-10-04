@@ -12,7 +12,16 @@ interface SessionBarProps {
   position?: 'header' | 'footer';
   standalone?: boolean;
   opacity?: number;
+  /**
+   * Blend with the grouped rows instead of drawing a separate band:
+   * - 'attached': part of the same card as the rows (no gap; rounds only its
+   *   outer corners), as in Relative.
+   * - 'floating': a rounded bar in the row colour, as in Standings.
+   */
+  variant?: 'attached' | 'floating';
 }
+
+const GROUPED_BG = 'bg-[var(--grouped-row-even,rgb(24_24_27/0.92))]';
 
 // Local-only feature slots (git-excluded src/local/). Empty glob => no-op.
 // The negative pattern keeps co-located *.spec.tsx test files out of the bundle.
@@ -29,6 +38,7 @@ export const SessionBar = ({
   position = 'header',
   opacity = 70,
   standalone = false,
+  variant,
 }: SessionBarProps) => {
   const generalSettings = useGeneralSettings();
 
@@ -58,6 +68,35 @@ export const SessionBar = ({
       SESSION_BAR_ITEM_COMPONENTS[key] &&
       isSessionBarItemEnabled(key, effectiveBarSettings, position)
   );
+
+  if (variant && !standalone) {
+    const variantPy = isUltra ? 'py-0' : isCompact ? 'py-0.5' : 'py-1.5';
+    const shape =
+      variant === 'attached'
+        ? position === 'header'
+          ? 'rounded-t-md'
+          : 'rounded-b-md'
+        : `rounded-md ${isUltra ? '' : position === 'header' ? 'mb-2' : 'mt-2'}`;
+    return (
+      <div
+        className={`${pxClass} ${variantPy} ${GROUPED_BG} ${shape} flex items-center justify-between gap-x-4 text-sm tabular-nums`}
+      >
+        {enabledKeys.map((key) => {
+          const ItemComponent = SESSION_BAR_ITEM_COMPONENTS[key];
+          return (
+            <ItemComponent
+              key={key}
+              settings={effectiveBarSettings}
+              standalone={false}
+            />
+          );
+        })}
+        {Object.entries(localSlots).map(([path, mod]) => (
+          <mod.default key={path} />
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div

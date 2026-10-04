@@ -89,6 +89,11 @@ interface DriverNameCellProps {
   nameDisplay?: 'both' | 'label' | 'name';
   alternateFrequency?: number;
   compactMode?: string;
+  /**
+   * Fixed CSS width for the name (compact width mode). Without it the cell
+   * takes all the space the other columns leave.
+   */
+  fixedWidth?: string;
 }
 
 export const DriverNameCell = memo(
@@ -107,6 +112,7 @@ export const DriverNameCell = memo(
     nameDisplay,
     alternateFrequency,
     compactMode,
+    fixedWidth,
   }: DriverNameCellProps) => {
     const displayName = fullName
       ? formatDriverName(
@@ -154,9 +160,12 @@ export const DriverNameCell = memo(
     return (
       <td
         data-column="driverName"
-        className={`w-full max-w-0${compactMode !== 'ultra' ? ' px-1 py-0.5' : ''}`}
+        className={`${fixedWidth ? 'w-auto' : 'w-full max-w-0'}${compactMode !== 'ultra' ? ' px-1 py-0.5' : ''}`}
       >
-        <div className="flex items-center overflow-hidden">
+        <div
+          className="flex items-center overflow-hidden"
+          style={fixedWidth ? { width: fixedWidth } : undefined}
+        >
           <span
             className={[
               'transition-[width,opacity] duration-300',
