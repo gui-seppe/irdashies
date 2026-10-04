@@ -29,6 +29,26 @@ const StatusBadge = ({
   );
 };
 
+/**
+ * Lap shown next to "L" after a stop: the lap of the last pit stop, or the
+ * laps since it when pitLapDisplayMode is 'lapsSinceLastPit'.
+ */
+export const getDisplayedPitLap = (
+  lap: number | undefined,
+  lastPitLap: number | undefined,
+  pitLapDisplayMode: string | undefined,
+  pitExitAfterSF: boolean | undefined
+): number | undefined => {
+  if (pitLapDisplayMode == 'lapsSinceLastPit' && lap && lastPitLap) {
+    // On tracks where pit exit is before the S/F line (pitExitAfterSF), the
+    // driver crosses S/F before completing a full out-lap. The +1 offset that
+    // normally accounts for the current in-progress lap would count that tiny
+    // partial lap as a full one, so we omit it in that case.
+    return pitExitAfterSF ? lap - lastPitLap : lap - lastPitLap + 1;
+  }
+  return lastPitLap;
+};
+
 // Shared classes for penalty / slowdown / meatball — matches original penalty badge dimensions
 const flagBadgeClasses = 'bg-black/80 inline-block min-w-6';
 
@@ -87,17 +107,19 @@ export const DriverStatusBadges = memo(
         )}
       </>
     );
-    let pitLap = lastPitLap;
-
-    if (pitLapDisplayMode == 'lapsSinceLastPit') {
-      if (lap && lastPitLap) {
-        // On tracks where pit exit is before the S/F line (pitExitAfterSF), the
-        // driver crosses S/F before completing a full out-lap. The +1 offset that
-        // normally accounts for the current in-progress lap would count that tiny
-        // partial lap as a full one, so we omit it in that case.
-        pitLap = pitExitAfterSF ? lap - lastPitLap : lap - lastPitLap + 1;
-      }
-    }
+    // While the car is still on pit road the stop has no exit time yet, so
+    // pitStopDuration is the running time since entry and ticks up live.
+    const livePitDuration = showPitTime && !!pitStopDuration && (
+      <span className="text-yellow-500">
+        {formatTime(pitStopDuration, 'duration')}
+      </span>
+    );
+    const pitLap = getDisplayedPitLap(
+      lap,
+      lastPitLap,
+      pitLapDisplayMode,
+      pitExitAfterSF
+    );
 
     return (
       <div
@@ -158,9 +180,9 @@ export const DriverStatusBadges = memo(
         {pit && (
           <StatusBadge
             borderColorClass={isMinimal ? muted : 'border-yellow-500'}
-            animate
+            animate={!livePitDuration}
           >
-            PIT
+            PIT {livePitDuration}
           </StatusBadge>
         )}
         {lastPit && !out && (

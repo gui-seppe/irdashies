@@ -1,7 +1,7 @@
-import { BarbellIcon, TimerIcon, UsersIcon } from '@phosphor-icons/react';
-import { getTailwindStyle } from '@irdashies/utils/colors';
+import { getStyleColorVar, getTailwindStyle } from '@irdashies/utils/colors';
 import type { ClassHeaderStyle } from '@irdashies/types';
 import { CarManufacturer } from '../CarManufacturer/CarManufacturer';
+import { HelmetIcon } from './HelmetIcon';
 import type { ClassLapEstimate, OrderedColumn } from '../../Standings';
 
 export interface DriverClassHeaderProps {
@@ -44,23 +44,17 @@ export const DriverClassHeader = ({
   }
 
   const styles = getTailwindStyle(classColor, highlightColor, isMultiClass);
-  const classNameColorBackground =
-    classHeaderStyle?.className?.colorBackground ?? true;
-  const classInfoColorBackground =
-    classHeaderStyle?.classInfo?.colorBackground ?? true;
+  const classColorVar = getStyleColorVar(styles);
+  const showGradient = classHeaderStyle?.className?.colorBackground ?? true;
   const classDividerBottomBorder =
     classHeaderStyle?.classDivider?.bottomBorder ?? false;
 
-  const classNameStyle = classNameColorBackground
-    ? styles.classHeader
-    : styles.borderColor;
-  const classInfoStyle = classInfoColorBackground
-    ? styles.driverIcon
-    : styles.borderColor;
-  const py = compactMode === 'ultra' ? '' : ' py-1';
+  const py = compactMode === 'ultra' ? '' : ' py-0.5';
   const borderClass = classDividerBottomBorder
     ? ` border-b-2 ${styles.borderColor}`
     : '';
+  // Gap between the header pill and the class block below it.
+  const cellPadding = compactMode === 'ultra' ? 'p-0' : 'p-0 pb-1';
 
   type HeaderCell =
     | { type: 'bar'; colSpan: number }
@@ -68,7 +62,6 @@ export const DriverClassHeader = ({
     | { type: 'data'; id: string; label: string; colSpan: number };
 
   const headerCells: HeaderCell[] = [];
-  let hasLeadingBlankTd = false;
   if (orderedColumns) {
     const segments: { kind: 'identity' | 'data'; columns: OrderedColumn[] }[] =
       [];
@@ -81,9 +74,8 @@ export const DriverClassHeader = ({
       }
     }
 
-    hasLeadingBlankTd = segments[0]?.kind === 'identity';
     let barPlaced = false;
-    segments.forEach((segment, index) => {
+    segments.forEach((segment) => {
       if (segment.kind === 'data') {
         for (const column of segment.columns) {
           headerCells.push({
@@ -102,113 +94,101 @@ export const DriverClassHeader = ({
       );
       if (!barPlaced) {
         barPlaced = true;
-        headerCells.push({
-          type: 'bar',
-          colSpan: index === 0 ? Math.max(1, totalSpan - 1) : totalSpan,
-        });
+        headerCells.push({ type: 'bar', colSpan: totalSpan });
       } else {
         headerCells.push({ type: 'blank', colSpan: totalSpan });
       }
     });
   }
 
-  const infoContent = (
-    <>
-      <span
-        className={`${classNameStyle} px-2${py} font-bold whitespace-nowrap${classNameColorBackground ? ' border-l-4' : ''}`}
-      >
-        {className}
-      </span>
-      <span className={`${classInfoStyle} px-2${py} flex items-center gap-1`}>
-        {classHeaderStyle?.estimatedLaps?.enabled && estimatedLaps && (
-          <span className="flex items-center gap-1 mr-3">
-            <TimerIcon />
-            <span>
-              {estimatedLaps.currentLap}/
-              {estimatedLaps.exact
-                ? estimatedLaps.total
-                : `≈${estimatedLaps.total.toFixed(2)}`}
-            </span>
+  const manufacturerStats = (() => {
+    const stats = classHeaderStyle?.manufacturerStats;
+    if (!stats?.enabled) return null;
+    if (!manufacturerCounts || manufacturerCounts.length <= 1) return null;
+
+    // undefined → default cap 5; null → All; number → specific cap
+    const rawCap = stats.cap;
+    const capValue = rawCap !== undefined ? rawCap : 5;
+
+    let visible =
+      capValue === null
+        ? [...manufacturerCounts]
+        : manufacturerCounts.slice(0, capValue);
+    const totalHidden = manufacturerCounts.length - visible.length;
+
+    if (
+      stats.showPlayerManufacturer &&
+      playerManufacturerEntry &&
+      totalHidden > 0 &&
+      !visible.some((v) => v.carId === playerManufacturerEntry.carId)
+    ) {
+      visible = [
+        ...visible.slice(0, visible.length - 1),
+        playerManufacturerEntry,
+      ];
+    }
+
+    const hidden = manufacturerCounts.length - visible.length;
+    return (
+      <span className="flex items-center gap-2 font-semibold text-white/80">
+        {visible.map(({ carId, count }) => (
+          <span key={carId} className="flex items-center gap-0.5">
+            <CarManufacturer carId={carId} />
+            <span>{count}</span>
           </span>
-        )}
-        {sof ? (
-          <>
-            <BarbellIcon />{' '}
-            <span>
-              {classHeaderStyle?.compactSof && sof >= 1000
-                ? `${(sof / 1000).toFixed(1)}k`
-                : sof.toFixed(0)}
-            </span>
-          </>
-        ) : (
-          ''
-        )}{' '}
-        <UsersIcon className={sof ? 'ml-3' : ''} />
-        <span>{totalDrivers}</span>
-        {(() => {
-          const stats = classHeaderStyle?.manufacturerStats;
-          if (!stats?.enabled) return null;
-          if (!manufacturerCounts || manufacturerCounts.length <= 1)
-            return null;
-
-          // undefined → default cap 5; null → All; number → specific cap
-          const rawCap = stats.cap;
-          const capValue = rawCap !== undefined ? rawCap : 5;
-
-          let visible =
-            capValue === null
-              ? [...manufacturerCounts]
-              : manufacturerCounts.slice(0, capValue);
-          const totalHidden = manufacturerCounts.length - visible.length;
-
-          if (
-            stats.showPlayerManufacturer &&
-            playerManufacturerEntry &&
-            totalHidden > 0 &&
-            !visible.some((v) => v.carId === playerManufacturerEntry.carId)
-          ) {
-            visible = [
-              ...visible.slice(0, visible.length - 1),
-              playerManufacturerEntry,
-            ];
-          }
-
-          const hidden = manufacturerCounts.length - visible.length;
-          return (
-            <>
-              {visible.map(({ carId, count }) => (
-                <span key={carId} className="flex items-center gap-0.5 ml-2">
-                  <CarManufacturer carId={carId} />
-                  <span>{count}</span>
-                </span>
-              ))}
-              {hidden > 0 && (
-                <span className="ml-1 text-white/50">+{hidden}</span>
-              )}
-            </>
-          );
-        })()}
+        ))}
+        {hidden > 0 && <span className="text-white/50">+{hidden}</span>}
       </span>
-    </>
+    );
+  })();
+
+  const infoContent = (
+    <div
+      className={`inline-flex items-center gap-3 rounded-md border-l-4 bg-zinc-900/90 px-2${py} font-bold whitespace-nowrap tabular-nums text-white [text-shadow:1px_1px_1px_rgba(0_0_0/0.35)]`}
+      style={{
+        borderColor: classColorVar,
+        backgroundImage: showGradient
+          ? `linear-gradient(90deg, color-mix(in srgb, ${classColorVar} 35%, transparent), transparent 6em)`
+          : undefined,
+      }}
+    >
+      <span>{className}</span>
+      {classHeaderStyle?.estimatedLaps?.enabled && estimatedLaps && (
+        <span>
+          {estimatedLaps.currentLap}/
+          {estimatedLaps.exact
+            ? estimatedLaps.total
+            : `≈${estimatedLaps.total.toFixed(2)}`}
+        </span>
+      )}
+      {!!sof && (
+        <span>
+          <span className="text-white/60">SOF</span>{' '}
+          {classHeaderStyle?.compactSof && sof >= 1000
+            ? `${(sof / 1000).toFixed(1)}k`
+            : sof.toFixed(0)}
+        </span>
+      )}
+      <span className="flex items-center gap-1">
+        <HelmetIcon size="1.15em" className="text-white/80" />
+        <span>{totalDrivers}</span>
+      </span>
+      {manufacturerStats}
+    </div>
   );
 
   if (orderedColumns) {
     return (
       <tr>
-        {hasLeadingBlankTd && <td></td>}
         {headerCells.map((cell, index) => {
           if (cell.type === 'bar') {
             return (
               <td
                 key="bar"
                 colSpan={cell.colSpan}
-                className={`p-0${borderClass}`}
+                className={`${cellPadding}${borderClass}`}
               >
-                <div
-                  className={`[text-shadow:1px_1px_1px_rgba(0_0_0/0.2)] flex items-center`}
-                >
-                  {infoContent}
-                </div>
+                {infoContent}
               </td>
             );
           }
@@ -217,7 +197,7 @@ export const DriverClassHeader = ({
               <td
                 key={`blank-${index}`}
                 colSpan={cell.colSpan}
-                className={`p-0${borderClass}`}
+                className={`${cellPadding}${borderClass}`}
               ></td>
             );
           }
@@ -225,7 +205,7 @@ export const DriverClassHeader = ({
             <td
               key={cell.id}
               colSpan={cell.colSpan}
-              className={`px-1 py-0 text-center text-xs font-bold uppercase tracking-wide text-slate-400 whitespace-nowrap${borderClass}`}
+              className={`px-1 pt-0 pb-1 align-bottom text-center text-xs font-bold uppercase tracking-wide text-white/50 whitespace-nowrap${borderClass}`}
             >
               {cell.label}
             </td>
@@ -237,13 +217,8 @@ export const DriverClassHeader = ({
 
   return (
     <tr>
-      <td></td>
-      <td colSpan={colSpan ?? 4} className={`p-0${borderClass}`}>
-        <div
-          className={`[text-shadow:1px_1px_1px_rgba(0_0_0/0.2)] flex items-center`}
-        >
-          {infoContent}
-        </div>
+      <td colSpan={colSpan ?? 4} className={`${cellPadding}${borderClass}`}>
+        {infoContent}
       </td>
     </tr>
   );

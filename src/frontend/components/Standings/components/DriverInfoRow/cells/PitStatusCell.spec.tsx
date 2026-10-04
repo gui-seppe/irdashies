@@ -112,4 +112,64 @@ describe('PitStatusCell', () => {
       expect(container.textContent).not.toContain('OUT');
     });
   });
+
+  describe('plain (flat) style', () => {
+    const pitCell = (container: HTMLElement) =>
+      container.querySelector<HTMLElement>('td[data-column="pitStatus"]');
+
+    it('glows green while moving down the pit lane, with the running time', () => {
+      const { container } = renderInTable(
+        <PitStatusCell
+          plain
+          showPitTime
+          onPitRoad
+          carTrackSurface={2}
+          pitStopDuration={6}
+          currentSessionType="Race"
+        />
+      );
+
+      const td = pitCell(container);
+      expect(td?.textContent).toBe('PIT6');
+      expect(td?.style.boxShadow).toContain('--color-green-500');
+      expect(td?.querySelector('.border-2')).toBeNull();
+    });
+
+    it('glows red once stationary in the pit stall', () => {
+      const { container } = renderInTable(
+        <PitStatusCell
+          plain
+          showPitTime
+          onPitRoad
+          carTrackSurface={1}
+          prevCarTrackSurface={2}
+          pitStopDuration={15}
+          currentSessionType="Race"
+        />
+      );
+
+      const td = pitCell(container);
+      expect(td?.textContent).toBe('PIT15');
+      expect(td?.style.boxShadow).toContain('--color-red-500');
+    });
+
+    it('shows the last stop lap and time in yellow after the stop', () => {
+      const { container } = renderInTable(
+        <PitStatusCell
+          plain
+          showPitTime
+          carTrackSurface={3}
+          lastPitLap={19}
+          lastLap={22}
+          lap={22}
+          pitStopDuration={35}
+        />
+      );
+
+      const td = pitCell(container);
+      expect(td?.textContent).toBe('L1935');
+      expect(td?.className).toContain('text-yellow-400');
+      expect(td?.style.boxShadow).toBe('');
+    });
+  });
 });

@@ -1,5 +1,5 @@
-import { memo, useMemo } from 'react';
-import { getTailwindStyle } from '@irdashies/utils/colors';
+import { memo, useMemo, type CSSProperties } from 'react';
+import { getStyleColorVar, getTailwindStyle } from '@irdashies/utils/colors';
 import { formatTime, type TimeFormat } from '@irdashies/utils/time';
 import { useDashboard, type P2PDisplayState } from '@irdashies/context';
 import type { ResolvedDriverTag } from '../../hooks';
@@ -85,7 +85,18 @@ interface DriverRowInfoProps {
   currentLap?: number;
   lapCountUnknown?: boolean;
   hideLeaderGapIntervalLabels?: boolean;
+  /**
+   * Row index within its class block. When set, the row is drawn as part of
+   * a grouped block: flush rows, alternating shades, a class colour bar down
+   * the left edge with a gradient fading out behind the position, and
+   * rounded corners on the first and last row.
+   */
+  groupIndex?: number;
+  isLastInGroup?: boolean;
 }
+
+const ROW_BG_EVEN = 'rgb(24 24 27 / 0.92)'; // zinc-900
+const ROW_BG_ODD = 'rgb(39 39 42 / 0.92)'; // zinc-800
 
 // Helper function to provide dummy data for hidden rows
 const getDummyData = () => ({
@@ -239,7 +250,10 @@ export const DriverInfoRow = memo((props: DriverRowInfoProps) => {
     currentLap,
     lapCountUnknown,
     hideLeaderGapIntervalLabels,
+    groupIndex,
+    isLastInGroup,
   } = displayProps;
+  const isGrouped = groupIndex !== undefined;
 
   const { currentDashboard } = useDashboard();
   const tagSettings = currentDashboard?.generalSettings?.driverTagSettings;
@@ -288,6 +302,7 @@ export const DriverInfoRow = memo((props: DriverRowInfoProps) => {
             offTrack={offTrack}
             tailwindStyles={tailwindStyles}
             showBackground={positionBackground}
+            plain={isGrouped}
             compactMode={compactMode}
           />
         ),
@@ -304,6 +319,7 @@ export const DriverInfoRow = memo((props: DriverRowInfoProps) => {
             tailwindStyles={tailwindStyles}
             showBackground={numberBackground}
             showBorder={numberBorder}
+            plain={isGrouped}
             compactMode={compactMode}
           />
         ),
@@ -417,6 +433,7 @@ export const DriverInfoRow = memo((props: DriverRowInfoProps) => {
             pitLapDisplayMode={config?.pitStatus?.pitLapDisplayMode}
             pitExitAfterSF={pitExitAfterSF}
             isMinimal={statusBadgesMinimal}
+            plain={isGrouped}
             compactMode={compactMode}
           />
         ),
@@ -447,6 +464,10 @@ export const DriverInfoRow = memo((props: DriverRowInfoProps) => {
             rating={rating}
             badgeFormat={config?.badge?.badgeFormat}
             isMinimal={badgeMinimal}
+            iratingChange={iratingChangeValue}
+            showIratingChange={
+              isGrouped && (config?.iratingChange?.enabled ?? false)
+            }
             compactMode={compactMode}
           />
         ),
@@ -455,7 +476,9 @@ export const DriverInfoRow = memo((props: DriverRowInfoProps) => {
         id: 'iratingChange',
         shouldRender:
           (displayOrder ? displayOrder.includes('iratingChange') : true) &&
-          (config?.iratingChange?.enabled ?? false),
+          (config?.iratingChange?.enabled ?? false) &&
+          // Grouped standings rows show the gain inside the badge instead.
+          !isGrouped,
         component: (
           <IratingChangeCell
             key="iratingChange"
@@ -716,7 +739,65 @@ export const DriverInfoRow = memo((props: DriverRowInfoProps) => {
     p2pDisplayState,
     currentLap,
     lapCountUnknown,
+    isGrouped,
   ]);
+
+  const groupedRowStyle = useMemo(() => {
+    if (!isGrouped) return undefined;
+    const classColor = getStyleColorVar(tailwindStyles);
+    const highlight = getStyleColorVar(
+      getTailwindStyle(undefined, highlightColor, false)
+    );
+    const base = groupIndex % 2 === 0 ? ROW_BG_EVEN : ROW_BG_ODD;
+    const mix = (pct: number) =>
+      `color-mix(in srgb, ${classColor} ${pct}%, transparent)`;
+    return {
+      '--class-color': classColor,
+      '--row-bg': isPlayer
+        ? `color-mix(in srgb, ${highlight} 45%, ${ROW_BG_EVEN})`
+        : base,
+      // The gradient spans the first two cells, continuous at the seam.
+      '--row-grad-a': `linear-gradient(90deg, ${mix(50)}, ${mix(18)})`,
+      '--row-grad-b': `linear-gradient(90deg, ${mix(18)}, transparent)`,
+    } as CSSProperties;
+  }, [isGrouped, tailwindStyles, highlightColor, groupIndex, isPlayer]);
+
+  if (isGrouped) {
+    const cellPy =
+      compactMode === 'ultra'
+        ? ''
+        : compactMode === 'compact'
+          ? '*:py-0.5'
+          : '*:py-1';
+    return (
+      <tr
+        key={carIdx}
+        style={groupedRowStyle}
+        className={[
+          'text-sm font-semibold *:bg-(--row-bg)',
+          '[&>td:first-child]:bg-(image:--row-grad-a) [&>td:nth-child(2)]:bg-(image:--row-grad-b)',
+          '[&>td:first-child]:[box-shadow:inset_4px_0_0_var(--class-color)] [&>td:first-child]:pl-3',
+          cellPy,
+          groupIndex === 0
+            ? '[&>td:first-child]:rounded-tl-md [&>td:last-child]:rounded-tr-md'
+            : '',
+          isLastInGroup
+            ? '[&>td:first-child]:rounded-bl-md [&>td:last-child]:rounded-br-md'
+            : '',
+          !isPlayer && isLappingAhead
+            ? 'text-red-400'
+            : !isPlayer && isLapped
+              ? 'text-blue-400'
+              : !onTrack || onPitRoad
+                ? 'text-white/55'
+                : 'text-white',
+          hidden ? 'invisible' : '',
+        ].join(' ')}
+      >
+        {columnDefinitions.map((column) => column.component)}
+      </tr>
+    );
+  }
 
   return (
     <tr

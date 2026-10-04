@@ -7,6 +7,8 @@ interface PositionCellProps {
   tailwindStyles: TailwindStyles;
   offTrack: boolean;
   showBackground?: boolean;
+  /** Bold number without the player background (grouped standings rows). */
+  plain?: boolean;
   compactMode?: string;
 }
 
@@ -17,14 +19,18 @@ export const PositionCell = memo(
     offTrack,
     tailwindStyles,
     showBackground = true,
+    plain = false,
     compactMode,
   }: PositionCellProps) => {
+    // Important so it still wins over a row-level background.
     const positionColor = offTrack
-      ? 'bg-yellow-400'
-      : isPlayer && showBackground
+      ? 'bg-yellow-400!'
+      : isPlayer && showBackground && !plain
         ? tailwindStyles.classHeader
         : '';
-    const textColor = offTrack ? 'text-yellow-900' : 'text-white';
+    const textColor = offTrack
+      ? 'text-yellow-900'
+      : `text-white${plain ? ' font-bold' : ''}`;
     const pxClass =
       compactMode === 'ultra'
         ? 'min-w-[2ch]'

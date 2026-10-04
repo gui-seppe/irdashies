@@ -30,7 +30,7 @@ const config: ForgeConfig = {
       name: '@electron-forge/publisher-github',
       config: {
         repository: {
-          owner: 'tariknz',
+          owner: 'gui-seppe',
           name: 'irdashies',
         },
         prerelease: true,

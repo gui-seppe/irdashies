@@ -110,6 +110,8 @@ const getOrderedColumns = (
         return isEnabled(column) && !hideCarManufacturer;
       }
       if (id === 'delta') return isEnabled(column) && !('gap' in config);
+      // Shown inside the rating badge, not as its own column.
+      if (id === 'iratingChange') return false;
       return isEnabled(column);
     })
   );
@@ -448,13 +450,9 @@ export const Standings = () => {
     [settings, hasAnyTag, hasAnyCountryFlag, isTeamRacing, hideCarManufacturer]
   );
 
-  // Determine table border spacing based on compact mode
   const isCompact =
     generalSettings?.compactMode === 'compact' ||
     generalSettings?.compactMode === 'ultra';
-  const tableBorderSpacing = isCompact
-    ? 'border-spacing-y-0'
-    : 'border-spacing-y-0.5';
   const scale = Math.min(200, Math.max(50, settings?.scale ?? 100)) / 100;
 
   if (!isSessionVisible) return <></>;
@@ -483,9 +481,7 @@ export const Standings = () => {
             position="header"
           />
         )}
-        <table
-          className={`w-full table-auto text-sm border-separate ${tableBorderSpacing}`}
-        >
+        <table className="w-full table-auto text-sm tabular-nums border-separate border-spacing-0">
           <tbody>
             {standings.map(([classId, classStandings], index) => {
               // Compute divider color once per class
@@ -670,6 +666,10 @@ export const Standings = () => {
                           }
                           compactMode={generalSettings?.compactMode}
                           p2pDisplayState={p2pDisplayStates[result.carIdx]}
+                          groupIndex={driverIndex}
+                          isLastInGroup={
+                            driverIndex === classStandings.length - 1
+                          }
                         />
                       </Fragment>
                     );

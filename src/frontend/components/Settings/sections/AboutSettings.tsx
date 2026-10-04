@@ -53,7 +53,7 @@ export const AboutSettings = () => {
           <h3 className="text-lg font-semibold">Connect</h3>
 
           <a
-            href="https://github.com/tariknz/irdashies"
+            href="https://github.com/gui-seppe/irdashies"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2 text-slate-300 hover:text-white transition-colors w-fit"
@@ -198,12 +198,12 @@ export const AboutSettings = () => {
                 issue:
               </p>
               <a
-                href="https://github.com/tariknz/irdashies"
+                href="https://github.com/gui-seppe/irdashies"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-slate-300 hover:text-white transition-colors underline"
               >
-                https://github.com/tariknz/irdashies
+                https://github.com/gui-seppe/irdashies
               </a>
             </div>
           </div>

@@ -65,6 +65,25 @@ describe('DriverStatusBadges', () => {
     expect(container.textContent).toContain('1:15');
   });
 
+  it('renders the running pit time while the car is still in the pits', () => {
+    const { container } = render(
+      <DriverStatusBadges pit pitStopDuration={8} showPitTime />
+    );
+
+    expect(container.textContent).toContain('PIT');
+    expect(container.textContent).toContain('8');
+    // Not pulsing while the timer is shown, so the number stays readable.
+    expect(container.querySelector('.animate-pulse')).toBeNull();
+  });
+
+  it('renders just PIT when showPitTime is disabled', () => {
+    const { container } = render(
+      <DriverStatusBadges pit pitStopDuration={8} />
+    );
+
+    expect(container.textContent?.trim()).toBe('PIT');
+  });
+
   it('renders repair, penalty, and slowdown badges', () => {
     const { container } = render(
       <DriverStatusBadges repair penalty slowdown />

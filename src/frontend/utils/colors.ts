@@ -13,7 +13,7 @@ const IRACING_CLASS_COLOR_MAP: Record<number, string> = {
   16734344: 'red', // Class 3
   11430911: 'cyan', // Class 4
   5504887: 'pink', // Class 5
-  13849600: 'purple', // Class 6 
+  13849600: 'purple', // Class 6
   13421772: 'amber', // Class 7
   39321: 'lime', // Class 8  - slowest
 };
@@ -206,6 +206,13 @@ export const colorNumToHex = (color?: number): string | undefined => {
   if (color == null) return undefined;
   return `#${(color & 0xffffff).toString(16).padStart(6, '0')}`;
 };
+
+/**
+ * CSS color value (a theme variable reference) for the class/highlight color
+ * in a TailwindStyles set, for use in inline styles such as gradients.
+ */
+export const getStyleColorVar = (styles: TailwindStyles) =>
+  `var(--${styles.borderColor.replace(/^border-/, 'color-')})`;
 
 export const getColor = (color?: string, value = 500) => {
   const styles = getComputedStyle(document.documentElement);

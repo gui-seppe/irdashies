@@ -1,7 +1,14 @@
+import { CaretDownIcon, CaretUpIcon } from '@phosphor-icons/react';
+
 export interface DriverRatingBadgeProps {
   license?: string;
   rating?: number;
   isMinimal?: boolean;
+  /**
+   * Projected iRating gain/loss. When set, the default pill format shows it
+   * after the rating, inside the same segment.
+   */
+  iratingChange?: number;
   format?:
     | 'license-color-fullrating-combo'
     | 'fullrating-color-no-license'
@@ -21,6 +28,7 @@ export const DriverRatingBadge = ({
   license = 'R 0.0',
   rating = 0,
   isMinimal = false,
+  iratingChange,
   format = 'license-color-rating-bw',
 }: DriverRatingBadgeProps) => {
   const licenseLevel = license?.charAt(0) || 'R';
@@ -41,6 +49,16 @@ export const DriverRatingBadge = ({
     C: 'border-yellow-900 bg-yellow-900',
     D: 'border-orange-900 bg-orange-900',
     R: 'border-red-900 bg-red-900',
+  };
+  // Solid, brighter fills for the joined pill (no border).
+  const pillColorMap: Record<string, string> = {
+    W: 'bg-zinc-500',
+    P: 'bg-purple-600',
+    A: 'bg-blue-600',
+    B: 'bg-green-600',
+    C: 'bg-yellow-600',
+    D: 'bg-orange-600',
+    R: 'bg-red-600',
   };
   const color = (isMinimal ? minimalColorMap : colorMap)[licenseLevel] ?? '';
 
@@ -66,9 +84,9 @@ export const DriverRatingBadge = ({
     return (
       <div className="flex gap-1 items-center justify-center mx-2">
         <div
-          className={`text-white text-center text-nowrap border-2 px-1 rounded-md text-xs leading-tight min-w-[1.8em] ${(isMinimal ? minimalColorMap : colorMap)["A"]}`}
+          className={`text-white text-center text-nowrap border-2 px-1 rounded-md text-xs leading-tight min-w-[1.8em] ${(isMinimal ? minimalColorMap : colorMap)['A']}`}
         >
-          {"AI"}
+          {'AI'}
         </div>
       </div>
     );
@@ -119,16 +137,31 @@ export const DriverRatingBadge = ({
         );
 
       case 'license-color-rating-bw':
-        // Default format: License + colored badge, rating in B&W
+        // Default format: one pill, colored license segment + B&W rating
         return (
-          <div className="flex gap-1 items-center mx-2">
-            <div
-              className={`text-white text-center text-nowrap border-2 px-1 rounded-md text-xs leading-tight min-w-[3.6em] ${color}`}
-            >
-              {formattedLicense} {safetyRating}
-            </div>
-            <div className="bg-white/10 text-white text-center border-2 border-transparent px-1 rounded-md text-xs leading-tight">
-              {simplifiedRating}k
+          <div className="flex items-center mx-2">
+            <div className="flex items-stretch overflow-hidden rounded-full text-xs font-bold leading-tight text-white text-nowrap tabular-nums">
+              <span
+                className={`pl-2 pr-1.5 py-px min-w-[3.4em] text-center ${(isMinimal ? minimalColorMap : pillColorMap)[licenseLevel] ?? ''}`}
+              >
+                {formattedLicense} {safetyRating}
+              </span>
+              <span className="flex items-center gap-1 bg-white/15 pl-1.5 pr-2 py-px">
+                <span>{simplifiedRating}k</span>
+                {iratingChange !== undefined && !isNaN(iratingChange) && (
+                  <span className="flex items-center justify-end gap-0.5 min-w-[4ch]">
+                    {Math.round(iratingChange) > 0 && (
+                      <CaretUpIcon size={10} weight="bold" />
+                    )}
+                    {Math.round(iratingChange) < 0 && (
+                      <CaretDownIcon size={10} weight="bold" />
+                    )}
+                    <span className="min-w-[3ch] text-right">
+                      {Math.abs(Math.round(iratingChange))}
+                    </span>
+                  </span>
+                )}
+              </span>
             </div>
           </div>
         );

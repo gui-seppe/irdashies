@@ -56,7 +56,7 @@ export const defaultDashboard: {
           timeFormat: 'full',
         },
         background: {
-          opacity: 80,
+          opacity: 0,
         },
         foreground: {
           opacity: 70,
