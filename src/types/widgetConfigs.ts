@@ -184,6 +184,8 @@ export interface StandingsConfig {
   useLivePosition?: boolean;
   position: { enabled: boolean };
   driverName: DriverNameConfig;
+  /** Status badges as their own column (see isStatusBadgesEnabled). */
+  statusBadges?: { enabled: boolean };
   teamName: { enabled: boolean };
   pitStatus: PitStatusConfig;
   pushToPass: { enabled: boolean };
@@ -230,6 +232,8 @@ export interface RelativeConfig {
   delta: { enabled: boolean; precision: number };
   position: { enabled: boolean };
   driverName: DriverNameConfig;
+  /** Status badges as their own column (see isStatusBadgesEnabled). */
+  statusBadges?: { enabled: boolean };
   teamName: { enabled: boolean };
   pitStatus: PitStatusConfig;
   pushToPass: { enabled: boolean };

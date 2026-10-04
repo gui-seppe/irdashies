@@ -31,7 +31,7 @@ import {
   standingsSelectors,
   useCarIdxClassEstLapTime,
 } from '@irdashies/context';
-import { SessionState } from '@irdashies/types';
+import { SessionState, isStatusBadgesEnabled } from '@irdashies/types';
 import { recentOfficialLapPace } from '@irdashies/domain';
 import { useIsSingleMake } from './hooks/useIsSingleMake';
 import { computeStintLap } from './components/DriverInfoRow/cells/lapCountUtils';
@@ -48,6 +48,7 @@ const COLUMN_LABELS: Record<string, string> = {
   driverTag: 'TAG',
   countryFlags: '',
   driverName: '',
+  statusBadges: '',
   teamName: '',
   pitStatus: 'PIT',
   carManufacturer: '',
@@ -111,6 +112,7 @@ const getOrderedColumns = (
         return isEnabled(column) && !hideCarManufacturer;
       }
       if (id === 'delta') return isEnabled(column) && !('gap' in config);
+      if (id === 'statusBadges') return isStatusBadgesEnabled(config);
       // Shown inside the rating badge, not as its own column.
       if (id === 'iratingChange') return false;
       return isEnabled(column);

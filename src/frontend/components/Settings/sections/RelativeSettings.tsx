@@ -5,6 +5,7 @@ import {
   RelativeWidgetSettings,
   SettingsTabType,
   getWidgetDefaultConfig,
+  isStatusBadgesEnabled,
 } from '@irdashies/types';
 import { ToggleSwitch } from '../components/ToggleSwitch';
 import { TabButton } from '../components/TabButton';
@@ -51,6 +52,7 @@ const sortableSettings: SortableSetting[] = [
     configKey: 'driverName',
     hasSubSetting: true,
   },
+  { id: 'statusBadges', label: 'Status Badges', configKey: 'statusBadges' },
   { id: 'teamName', label: 'Team Name', configKey: 'teamName' },
   {
     id: 'pitStatus',
@@ -115,7 +117,11 @@ const DisplaySettingsList = ({
       onReorder={(newItems) => onReorder(newItems.map((i) => i.id))}
       renderItem={(setting, sortableProps) => {
         const configValue = settings.config[setting.configKey];
-        const isEnabled = (configValue as { enabled: boolean }).enabled;
+        const isEnabled =
+          setting.id === 'statusBadges'
+            ? isStatusBadgesEnabled(settings.config)
+            : ((configValue as { enabled: boolean } | undefined)?.enabled ??
+              false);
 
         return (
           <DraggableSettingItem
@@ -329,29 +335,6 @@ const DisplaySettingsList = ({
                         [setting.configKey]: {
                           ...cv,
                           removeNumbersFromName: enabled,
-                        },
-                      });
-                    }}
-                  />
-                </div>
-              )}
-            {setting.hasSubSetting &&
-              setting.configKey === 'driverName' &&
-              settings.config.driverName.enabled && (
-                <div className="flex items-center justify-between pl-8 mt-2 indent-8">
-                  <span className="text-sm text-slate-300">Status Badges</span>
-                  <ToggleSwitch
-                    enabled={settings.config.driverName.showStatusBadges}
-                    onToggle={(enabled) => {
-                      const cv = settings.config[setting.configKey] as {
-                        enabled: boolean;
-                        showStatusBadges: boolean;
-                        [key: string]: unknown;
-                      };
-                      handleConfigChange({
-                        [setting.configKey]: {
-                          ...cv,
-                          showStatusBadges: enabled,
                         },
                       });
                     }}

@@ -27,6 +27,8 @@ import { PitStatusCell } from './cells/PitStatusCell';
 import { PushToPassCell } from './cells/PushToPassCell';
 import { PositionCell } from './cells/PositionCell';
 import { TeamNameCell } from './cells/TeamNameCell';
+import { StatusBadgesCell } from './cells/StatusBadgesCell';
+import { isStatusBadgesEnabled } from '@irdashies/types';
 
 interface DriverRowInfoProps {
   carIdx: number;
@@ -392,7 +394,8 @@ export const DriverInfoRow = memo((props: DriverRowInfoProps) => {
             repair={repair}
             penalty={penalty}
             slowdown={slowdown}
-            showStatusBadges={config?.driverName?.showStatusBadges ?? true}
+            // Shown in their own column (statusBadges) instead.
+            showStatusBadges={false}
             isMinimalStatusBadges={statusBadgesMinimal}
             removeNumbersFromName={
               config?.driverName?.removeNumbersFromName ?? false
@@ -404,6 +407,22 @@ export const DriverInfoRow = memo((props: DriverRowInfoProps) => {
             alternateFrequency={tagSettings?.display?.alternateFrequency}
             compactMode={compactMode}
             fixedWidth={nameWidth}
+          />
+        ),
+      },
+      {
+        id: 'statusBadges',
+        shouldRender:
+          (displayOrder ? displayOrder.includes('statusBadges') : true) &&
+          isStatusBadgesEnabled(config),
+        component: (
+          <StatusBadgesCell
+            key="statusBadges"
+            repair={repair}
+            penalty={penalty}
+            slowdown={slowdown}
+            isMinimal={statusBadgesMinimal}
+            compactMode={compactMode}
           />
         ),
       },
