@@ -10,6 +10,7 @@ import { SettingsSection } from '../components/SettingSection';
 import { SettingToggleRow } from '../components/SettingToggleRow';
 import { SettingNumberRow } from '../components/SettingNumberRow';
 import { SettingSliderRow } from '../components/SettingSliderRow';
+import { SettingSelectRow } from '../components/SettingSelectRow';
 import { SessionVisibility } from '../components/SessionVisibility';
 import { TabButton } from '../components/TabButton';
 
@@ -99,6 +100,61 @@ export const CornerNameSettings = () => {
                   enabled={settings.config.showTrackPct}
                   onToggle={(v) => handleConfigChange({ showTrackPct: v })}
                 />
+
+                <SettingToggleRow
+                  title="Show Corner Speeds"
+                  description="Max speed before braking and min speed at the apex for the corner you are in, next to your best lap's. This lap's numbers update through the corner and hold until the next one. Uses the same lap recording as Lap Trace, so the best-lap column fills in once a clean lap has been recorded."
+                  enabled={settings.config.showCornerSpeeds ?? false}
+                  onToggle={(v) => handleConfigChange({ showCornerSpeeds: v })}
+                />
+
+                {settings.config.showCornerSpeeds && (
+                  <>
+                    <SettingSelectRow
+                      title="Corner Speed Layout"
+                      description="Compact shows only the numbers, stacked: best lap max (purple), this lap max, best lap min (pink), this lap min. Small enough to sit beside the iRacing pedal graph. Full adds a labelled table under the corner name."
+                      value={settings.config.cornerSpeedLayout ?? 'compact'}
+                      options={[
+                        { label: 'Compact', value: 'compact' },
+                        { label: 'Full', value: 'full' },
+                      ]}
+                      onChange={(v) =>
+                        handleConfigChange({ cornerSpeedLayout: v })
+                      }
+                    />
+
+                    <SettingSelectRow
+                      title="Corner Speed Unit"
+                      value={settings.config.cornerSpeedUnit ?? 'auto'}
+                      options={[
+                        { label: 'Auto (follow iRacing)', value: 'auto' },
+                        { label: 'km/h', value: 'km/h' },
+                        { label: 'mph', value: 'mph' },
+                      ]}
+                      onChange={(v) =>
+                        handleConfigChange({ cornerSpeedUnit: v })
+                      }
+                    />
+
+                    {(settings.config.cornerSpeedLayout ?? 'compact') ===
+                      'full' && (
+                      <SettingSelectRow
+                        title="Corner Speed Label"
+                        description="How the corner the speeds belong to is named"
+                        value={
+                          settings.config.cornerSpeedLabelStyle ?? 'number'
+                        }
+                        options={[
+                          { label: 'Turn number', value: 'number' },
+                          { label: 'Name', value: 'name' },
+                        ]}
+                        onChange={(v) =>
+                          handleConfigChange({ cornerSpeedLabelStyle: v })
+                        }
+                      />
+                    )}
+                  </>
+                )}
               </SettingsSection>
             )}
 

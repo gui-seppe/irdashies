@@ -1,5 +1,9 @@
 import { Meta, StoryObj } from '@storybook/react-vite';
-import { CornerNameOverlay } from './CornerNameOverlay';
+import {
+  CompactCornerSpeeds,
+  CornerNameOverlay,
+  CornerSpeedsTable,
+} from './CornerNameOverlay';
 import {
   ChannelSnapshotDecorator,
   TelemetryDecorator,
@@ -56,4 +60,41 @@ export const LimeRockGP: Story = {
 export const LargeFontSize: Story = {
   args: { fontSize: 24 },
   decorators: [TelemetryDecorator('/test-data/1732274253573')],
+};
+
+/** The corner speeds block on its own: best lap vs this lap (m/s in, km/h out). */
+export const CornerSpeeds: Story = {
+  render: () => (
+    <div
+      className="w-full rounded-sm p-2"
+      style={{ backgroundColor: 'rgba(15, 23, 42, 0.9)' }}
+    >
+      <CornerSpeedsTable
+        speeds={{
+          label: 'T5',
+          best: { maxMs: 72.5, minMs: 26.4 },
+          current: { maxMs: 73.1, minMs: 25.9 },
+        }}
+        unit="km/h"
+        fontSize={18}
+        spaced={false}
+      />
+    </div>
+  ),
+};
+
+/** Compact layout: best max, this lap max, best min, this lap min. */
+export const CornerSpeedsCompact: Story = {
+  render: () => (
+    <CompactCornerSpeeds
+      speeds={{
+        label: 'T5',
+        best: { maxMs: 79.2, minMs: 17.8 },
+        current: { maxMs: 78.6, minMs: 17.5 },
+      }}
+      unit="km/h"
+      fontSize={18}
+      opacity={0.6}
+    />
+  ),
 };

@@ -1492,6 +1492,10 @@ export const defaultDashboard: {
         showTrackPct: true,
         fontSize: 18,
         opacity: 0.9,
+        showCornerSpeeds: false,
+        cornerSpeedUnit: 'auto',
+        cornerSpeedLabelStyle: 'number',
+        cornerSpeedLayout: 'compact',
         sessionVisibility: {
           race: true,
           loneQualify: true,

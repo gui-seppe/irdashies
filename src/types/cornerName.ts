@@ -11,6 +11,19 @@ export interface CornerNameOverlayConfig {
   showTrackPct: boolean;
   fontSize: number;
   opacity: number;
+  /**
+   * Max approach speed and min apex speed for the corner being driven, next to
+   * the reference (best) lap's. Uses the Lap Trace recorder's laps.
+   */
+  showCornerSpeeds: boolean;
+  cornerSpeedUnit: 'auto' | 'km/h' | 'mph';
+  cornerSpeedLabelStyle: 'name' | 'number';
+  /**
+   * 'compact' shows only the four numbers (best/this lap max, best/this lap
+   * min) in place of the whole widget; 'full' adds a labelled table under the
+   * corner name.
+   */
+  cornerSpeedLayout: 'compact' | 'full';
   sessionVisibility: SessionVisibilitySettings;
 }
 

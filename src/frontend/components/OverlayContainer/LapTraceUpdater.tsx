@@ -1,5 +1,9 @@
 import { useMemo } from 'react';
-import type { LapTraceConfig, LapTraceSource } from '@irdashies/types';
+import type {
+  CornerNameOverlayConfig,
+  LapTraceConfig,
+  LapTraceSource,
+} from '@irdashies/types';
 import {
   useLapTraceRecorder,
   useWidgetsForThisDisplay,
@@ -32,9 +36,15 @@ export const LapTraceUpdater = ({ browser = false }: { browser?: boolean }) => {
 
   const referenceSource = useMemo<LapTraceSource | null>(() => {
     const widget = widgets.find((w) => w.id === 'laptrace');
-    if (!widget) return RECORDER_OFF;
-    const config = widget.config as LapTraceConfig | undefined;
-    return config?.referenceSource ?? 'best';
+    if (widget) {
+      const config = widget.config as LapTraceConfig | undefined;
+      return config?.referenceSource ?? 'best';
+    }
+    // Corner Name's corner speeds compare against the recorded best lap.
+    const cornerName = widgets.find((w) => w.id === 'cornername');
+    const cornerNameConfig = cornerName?.config as
+      Partial<CornerNameOverlayConfig> | undefined;
+    return cornerNameConfig?.showCornerSpeeds ? 'best' : RECORDER_OFF;
   }, [widgets]);
 
   return referenceSource ? (
