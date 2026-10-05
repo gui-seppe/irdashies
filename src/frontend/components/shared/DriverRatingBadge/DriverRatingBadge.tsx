@@ -146,19 +146,19 @@ export const DriverRatingBadge = ({
               >
                 {formattedLicense} {safetyRating}
               </span>
-              <span className="flex items-center gap-1 bg-white/15 pl-1.5 pr-2 py-px">
+              <span className="flex items-center gap-1.5 bg-white/15 pl-1.5 pr-2 py-px">
                 <span>{simplifiedRating}k</span>
                 {iratingChange !== undefined && !isNaN(iratingChange) && (
-                  <span className="flex items-center justify-end gap-0.5 min-w-[4ch]">
+                  // Fixed width keeps pills aligned across rows; padding goes
+                  // before the caret so it always hugs the number.
+                  <span className="flex items-center justify-end gap-0.5 min-w-[calc(3ch+12px)]">
                     {Math.round(iratingChange) > 0 && (
                       <CaretUpIcon size={10} weight="bold" />
                     )}
                     {Math.round(iratingChange) < 0 && (
                       <CaretDownIcon size={10} weight="bold" />
                     )}
-                    <span className="min-w-[3ch] text-right">
-                      {Math.abs(Math.round(iratingChange))}
-                    </span>
+                    <span>{Math.abs(Math.round(iratingChange))}</span>
                   </span>
                 )}
               </span>

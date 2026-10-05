@@ -297,7 +297,24 @@ export const DriverInfoRow = memo((props: DriverRowInfoProps) => {
     return Array.from({ length: numLapDeltasToShow }, (_, index) => index);
   }, [numLapDeltasToShow]);
 
+  // The projected gain only means something where iRating is at stake: not
+  // in practice / warmup / testing (unless the practice estimate is turned
+  // on), and not when no gain was calculated for this session at all.
+  const isPracticeLikeSession = /practice|warmup|testing/i.test(
+    currentSessionType ?? ''
+  );
+  const estimateInPractice =
+    (config?.iratingChange as { estimateInPractice?: boolean } | undefined)
+      ?.estimateInPractice ?? false;
+  const showIratingGain =
+    isGrouped &&
+    (config?.iratingChange?.enabled ?? false) &&
+    iratingChangeValue !== undefined &&
+    !Number.isNaN(iratingChangeValue) &&
+    (!isPracticeLikeSession || estimateInPractice);
+
   const columnDefinitions = useMemo(() => {
+    const standingsConfig = config && 'gap' in config ? config : undefined;
     const columns = [
       {
         id: 'position',
@@ -401,6 +418,11 @@ export const DriverInfoRow = memo((props: DriverRowInfoProps) => {
               config?.driverName?.removeNumbersFromName ?? false
             }
             fullName={name}
+            teamName={
+              standingsConfig?.driverName.subtext === 'teamName'
+                ? teamName
+                : undefined
+            }
             nameFormat={config?.driverName?.nameFormat}
             label={resolvedTag?.label}
             nameDisplay={tagSettings?.display?.nameDisplay}
@@ -436,6 +458,15 @@ export const DriverInfoRow = memo((props: DriverRowInfoProps) => {
           <TeamNameCell
             key="teamName"
             teamName={teamName}
+            driverName={
+              standingsConfig?.teamName.subtext === 'driverName'
+                ? name
+                : undefined
+            }
+            nameFormat={config?.driverName?.nameFormat}
+            removeNumbersFromName={
+              config?.driverName?.removeNumbersFromName ?? false
+            }
             compactMode={compactMode}
           />
         ),
@@ -493,9 +524,7 @@ export const DriverInfoRow = memo((props: DriverRowInfoProps) => {
             badgeFormat={config?.badge?.badgeFormat}
             isMinimal={badgeMinimal}
             iratingChange={iratingChangeValue}
-            showIratingChange={
-              isGrouped && (config?.iratingChange?.enabled ?? false)
-            }
+            showIratingChange={showIratingGain}
             compactMode={compactMode}
           />
         ),
@@ -769,6 +798,7 @@ export const DriverInfoRow = memo((props: DriverRowInfoProps) => {
     lapCountUnknown,
     isGrouped,
     nameWidth,
+    showIratingGain,
   ]);
 
   const groupedRowStyle = useMemo(() => {

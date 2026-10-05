@@ -467,6 +467,12 @@ export const Standings = () => {
     settings?.compactWidth?.maxNameChars
   );
 
+  // The session time goes in the top class header only.
+  const firstClassId = standings.find(
+    ([, classStandings]) => classStandings.length > 0
+  )?.[0];
+  const showSessionTime = !!settings?.classHeaderStyle?.sessionTime?.enabled;
+
   if (!isSessionVisible) return <></>;
 
   // Show only when on track setting
@@ -545,6 +551,9 @@ export const Standings = () => {
                     manufacturerCounts={manufacturerStats?.counts}
                     playerManufacturerEntry={manufacturerStats?.playerEntry}
                     orderedColumns={orderedColumns}
+                    showSessionTime={
+                      showSessionTime && classId === firstClassId
+                    }
                   />
                   {classStandings.map((result, driverIndex) => {
                     const prev = classStandings[driverIndex - 1];
@@ -598,7 +607,9 @@ export const Standings = () => {
                           }
                           name={result.driver?.name || ''}
                           teamName={
-                            settings?.teamName?.enabled && isTeamRacing
+                            isTeamRacing &&
+                            (settings?.teamName?.enabled ||
+                              settings?.driverName?.subtext === 'teamName')
                               ? result.driver?.teamName || ''
                               : undefined
                           }

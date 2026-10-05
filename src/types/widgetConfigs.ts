@@ -112,6 +112,8 @@ export interface ClassHeaderStyle {
     showPlayerManufacturer: boolean;
   };
   estimatedLaps?: { enabled: boolean; numLaps?: number };
+  /** Session time remaining, shown in the first class header. */
+  sessionTime?: { enabled: boolean };
 }
 
 // ===========================
@@ -183,10 +185,10 @@ export interface StandingsConfig {
   showOnlyWhenOnTrack: boolean;
   useLivePosition?: boolean;
   position: { enabled: boolean };
-  driverName: DriverNameConfig;
+  driverName: DriverNameConfig & { subtext?: 'none' | 'teamName' };
   /** Status badges as their own column (see isStatusBadgesEnabled). */
   statusBadges?: { enabled: boolean };
-  teamName: { enabled: boolean };
+  teamName: { enabled: boolean; subtext?: 'none' | 'driverName' };
   pitStatus: PitStatusConfig;
   pushToPass: { enabled: boolean };
   driverTag: { enabled: boolean; widthPx?: number };

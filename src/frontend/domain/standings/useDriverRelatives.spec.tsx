@@ -297,6 +297,50 @@ describe('useDriverRelatives', () => {
     expect(result.current.some((driver) => driver.carIdx === 1)).toBe(false);
   });
 
+  it('should filter out spectator slots', () => {
+    const baseImpl = vi.mocked(useSessionStore).getMockImplementation();
+    if (!baseImpl) throw new Error('session store mock missing');
+    vi.mocked(useSessionStore).mockImplementation((selector) =>
+      baseImpl((state) =>
+        selector({
+          ...state,
+          session: state.session && {
+            ...state.session,
+            DriverInfo: {
+              ...state.session.DriverInfo,
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              Drivers: [{ CarIdx: 2, IsSpectator: 1 } as any],
+            },
+          },
+        })
+      )
+    );
+
+    const { result } = renderHook(() => useDriverRelatives({ buffer: 2 }));
+
+    expect(result.current.map((driver) => driver.carIdx)).toEqual([1, 0]);
+  });
+
+  it('fills the window from the other side when fillWindow is set', () => {
+    vi.mocked(useRelativeGapsSnapshot).mockReturnValue({
+      focusCarIdx: 0,
+      relativePcts: [0, -0.1, -0.2],
+      deltas: [0, -10, -20],
+      sessionNum: 1,
+      version: 3,
+    });
+
+    const { result: centered } = renderHook(() =>
+      useDriverRelatives({ buffer: 1 })
+    );
+    expect(centered.current.map((driver) => driver.carIdx)).toEqual([0, 1]);
+
+    const { result: filled } = renderHook(() =>
+      useDriverRelatives({ buffer: 1, fillWindow: true })
+    );
+    expect(filled.current.map((driver) => driver.carIdx)).toEqual([0, 1, 2]);
+  });
+
   describe('hideDriversInPitStall', () => {
     const inStall = (driver: Standings): Standings => ({
       ...driver,

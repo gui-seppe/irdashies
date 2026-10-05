@@ -26,6 +26,7 @@ import {
   usePushToPassStoreUpdater,
   useSessionDrivers,
   type P2PDisplayState,
+  useSessionTimingStore,
 } from '@irdashies/context';
 import type {
   DashboardBridge,
@@ -39,7 +40,7 @@ import {
   type CalculationResult,
   type RaceResult,
 } from '@irdashies/utils/iratingGain';
-import { useState, Fragment, useMemo } from 'react';
+import { useState, Fragment, useMemo, useEffect } from 'react';
 import { DriverClassHeader } from './components/DriverClassHeader/DriverClassHeader';
 import { DriverInfoRow } from './components/DriverInfoRow/DriverInfoRow';
 import type { ResolvedDriverTag } from './hooks/useDriverTagMap';
@@ -573,6 +574,89 @@ export const TeamSession: Story = {
           'lastTime',
           'lapTimeDeltas',
         ],
+      },
+    }),
+  ],
+};
+
+export const TeamSessionDriverWithTeamSubtext: Story = {
+  decorators: [
+    TelemetryDecoratorWithConfig('/test-data/1763227688917', {
+      standings: {
+        driverName: { subtext: 'teamName' },
+      },
+    }),
+  ],
+};
+
+export const TeamSessionDriverWithTeamSubtextCompact: Story = {
+  decorators: [
+    TelemetryDecoratorWithConfig(
+      '/test-data/1763227688917',
+      { standings: { driverName: { subtext: 'teamName' } } },
+      { compactMode: 'compact' }
+    ),
+  ],
+};
+
+export const TeamSessionDriverWithTeamSubtextUltra: Story = {
+  decorators: [
+    TelemetryDecoratorWithConfig(
+      '/test-data/1763227688917',
+      { standings: { driverName: { subtext: 'teamName' } } },
+      { compactMode: 'ultra' }
+    ),
+  ],
+};
+
+export const TeamSessionTeamWithDriverSubtext: Story = {
+  decorators: [
+    TelemetryDecoratorWithConfig('/test-data/1763227688917', {
+      standings: {
+        driverName: { enabled: false },
+        teamName: { enabled: true, subtext: 'driverName' },
+      },
+    }),
+  ],
+};
+
+export const TeamSessionTeamWithDriverSubtextCompact: Story = {
+  decorators: [
+    TelemetryDecoratorWithConfig(
+      '/test-data/1763227688917',
+      {
+        standings: {
+          driverName: { enabled: false },
+          teamName: { enabled: true, subtext: 'driverName' },
+        },
+      },
+      { compactMode: 'compact' }
+    ),
+  ],
+};
+
+export const TeamSessionTeamWithDriverSubtextUltra: Story = {
+  decorators: [
+    TelemetryDecoratorWithConfig(
+      '/test-data/1763227688917',
+      {
+        standings: {
+          driverName: { enabled: false },
+          teamName: { enabled: true, subtext: 'driverName' },
+        },
+      },
+      { compactMode: 'ultra' }
+    ),
+  ],
+};
+
+// Custom build: the name subtext together with Compact Width.
+export const TeamSessionDriverWithTeamSubtextCompactWidth: Story = {
+  decorators: [
+    TelemetryDecoratorWithConfig('/test-data/1763227688917', {
+      standings: {
+        driverName: { subtext: 'teamName' },
+        compactWidth: { enabled: true },
       },
     }),
   ],
@@ -1858,6 +1942,49 @@ export const CompactWidth: Story = {
   decorators: [
     TelemetryDecoratorWithConfig('/test-data/1731391056221', {
       standings: { compactWidth: { enabled: true } },
+    }),
+  ],
+};
+
+// Drives a ticking 30 minute practice clock (Storybook has no live timing).
+const WithSessionClock = (Story: React.ComponentType) => {
+  useEffect(() => {
+    const total = 30 * 60;
+    let elapsed = 7 * 60 + 19;
+    const tick = () => {
+      useSessionTimingStore.getState().update({
+        sessionType: 'Practice',
+        state: 4,
+        currentLap: 3,
+        totalLaps: 0,
+        time: elapsed,
+        timeTotal: total,
+        timeRemaining: total - elapsed,
+        greenFlagTimestamp: 0,
+        isFixedLapRace: false,
+        totalRaceLaps: 0,
+        totalRaceTime: 0,
+        adjustedRaceTime: 0,
+      });
+      elapsed += 1;
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, []);
+  return <Story />;
+};
+
+export const SessionTimeInClassHeader: Story = {
+  decorators: [
+    WithSessionClock,
+    TelemetryDecoratorWithConfig('/test-data/1731391056221', {
+      standings: {
+        classHeaderStyle: {
+          sessionTime: { enabled: true },
+          estimatedLaps: { enabled: true },
+        },
+      },
     }),
   ],
 };

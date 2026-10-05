@@ -11,9 +11,16 @@ import { Standings } from './createStandings';
 export const useDriverRelatives = ({
   buffer,
   hideDriversInPitStall = false,
+  fillWindow = false,
 }: {
   buffer: number;
   hideDriversInPitStall?: boolean;
+  /**
+   * Always return up to `2 * buffer + 1` drivers: when there are fewer than
+   * `buffer` cars on one side of the focus car, take extra from the other side
+   * instead of leaving the window short.
+   */
+  fillWindow?: boolean;
 }) => {
   const drivers = useDriverStandings();
   const snapshot = useRelativeGapsSnapshot();
@@ -22,6 +29,17 @@ export const useDriverRelatives = ({
   const focusCarIdx = snapshot?.focusCarIdx ?? rendererFocusCarIdx;
   const paceCarIdx =
     useSessionStore((s) => s.session?.DriverInfo?.PaceCarIdx) ?? -1;
+  const sessionDrivers = useSessionStore((s) => s.session?.DriverInfo?.Drivers);
+  // Spectator entries (e.g. your own slot when watching a race you're not
+  // entered in) aren't real cars. Team members spectating their own team car
+  // are not flagged as spectators, so their car stays visible.
+  const spectatorCarIdxs = useMemo(
+    () =>
+      new Set(
+        (sessionDrivers ?? []).filter((d) => d.IsSpectator).map((d) => d.CarIdx)
+      ),
+    [sessionDrivers]
+  );
 
   const calculateRelativePct = useCallback(
     (opponentIdx: number): number => {
@@ -49,6 +67,9 @@ export const useDriverRelatives = ({
       // Must not be the pace car
       if (driver.carIdx === paceCarIdx) return false;
 
+      // Must not be a spectator slot
+      if (spectatorCarIdxs.has(driver.carIdx)) return false;
+
       // The focus car is always kept, even when sitting in its own pit stall.
       if (driver.carIdx === focusCarIdx) return true;
 
@@ -66,7 +87,7 @@ export const useDriverRelatives = ({
       // Must be on track
       return driver.onTrack;
     },
-    [focusCarIdx, paceCarIdx, hideDriversInPitStall]
+    [focusCarIdx, paceCarIdx, spectatorCarIdxs, hideDriversInPitStall]
   );
 
   const standings = useMemo(() => {
@@ -92,8 +113,16 @@ export const useDriverRelatives = ({
     const playerIdx = processed.findIndex((d) => d.carIdx === focusCarIdx);
     if (playerIdx === -1) return [];
 
-    const start = Math.max(0, playerIdx - buffer);
-    const end = Math.min(processed.length, playerIdx + 1 + buffer);
+    const windowSize = 2 * buffer + 1;
+    const start = Math.max(
+      0,
+      fillWindow
+        ? Math.min(playerIdx - buffer, processed.length - windowSize)
+        : playerIdx - buffer
+    );
+    const end = fillWindow
+      ? Math.min(processed.length, start + windowSize)
+      : Math.min(processed.length, playerIdx + 1 + buffer);
 
     const visibleDrivers = processed.slice(start, end);
 
@@ -104,6 +133,7 @@ export const useDriverRelatives = ({
     }));
   }, [
     buffer,
+    fillWindow,
     drivers,
     isValidDriver,
     calculateRelativePct,

@@ -101,7 +101,9 @@ export const PitStatusCell = memo(
         value = duration;
         textClass = 'text-white';
         style = pitGlowStyle('var(--color-red-500)');
-      } else if (pit) {
+      } else if (pit && currentSessionType === 'Race') {
+        // Live pit state only in races. In practice / qualifying a car sat
+        // in the pits shows nothing; OUT and the stop time follow as usual.
         label = 'PIT';
         value = duration;
         textClass = 'text-white';
@@ -128,7 +130,10 @@ export const PitStatusCell = memo(
           style={style}
         >
           {label && (
-            <div className="flex items-center justify-between gap-2">
+            // Label left and time right; a label on its own is centred.
+            <div
+              className={`flex items-center gap-2 ${value ? 'justify-between' : 'justify-center'}`}
+            >
               <span>{label}</span>
               {value && <span>{value}</span>}
             </div>

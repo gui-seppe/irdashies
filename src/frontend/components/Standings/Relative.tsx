@@ -37,6 +37,7 @@ export const Relative = () => {
   const standings = useDriverRelatives({
     buffer,
     hideDriversInPitStall: settings?.hideDriversInPitStall ?? false,
+    fillWindow: true,
   });
   const hasAnyCountryFlag = useMemo(
     () => standings.some((result) => (result.driver?.flairId ?? 0) > 0),
@@ -170,10 +171,9 @@ export const Relative = () => {
       ));
     }
 
-    // Center the player in the middle of the display
-    const centerIndex = Math.floor(totalRows / 2); // buffer
-    const resultAt = (index: number) =>
-      standings[index - centerIndex + playerIndex];
+    // The window is already filled around the focus car, so rows start at the
+    // top; any blank slots (fewer cars than rows) fall at the bottom.
+    const resultAt = (index: number) => standings[index];
 
     // Create an array of fixed size with placeholder rows
     return Array.from({ length: totalRows }, (_, index) => {

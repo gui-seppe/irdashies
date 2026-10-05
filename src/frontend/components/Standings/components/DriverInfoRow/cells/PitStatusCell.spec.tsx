@@ -172,6 +172,47 @@ describe('PitStatusCell', () => {
       expect(td?.className).not.toContain('animate-pulse');
     });
 
+    it('shows nothing for a car in the pits outside a race', () => {
+      for (const session of ['Practice', 'Open Qualify', 'Lone Qualify']) {
+        const { container, unmount } = renderInTable(
+          <PitStatusCell
+            plain
+            showPitTime
+            onPitRoad
+            carTrackSurface={1}
+            prevCarTrackSurface={2}
+            pitStopDuration={15}
+            currentSessionType={session}
+          />
+        );
+        const td = pitCell(container);
+        expect(td?.textContent).toBe('');
+        expect(td?.style.boxShadow).toBe('');
+        unmount();
+      }
+    });
+
+    it('still shows OUT outside a race', () => {
+      const { container } = renderInTable(
+        <PitStatusCell
+          plain
+          carTrackSurface={3}
+          lastPitLap={4}
+          lastLap={4}
+          currentSessionType="Practice"
+        />
+      );
+      expect(pitCell(container)?.textContent).toBe('OUT');
+    });
+
+    it('centres a label shown without a time', () => {
+      const { container } = renderInTable(
+        <PitStatusCell plain carTrackSurface={3} lastPitLap={4} lastLap={4} />
+      );
+      const row = pitCell(container)?.firstElementChild;
+      expect(row?.className).toContain('justify-center');
+    });
+
     it('shows the last stop lap and time in yellow after the stop', () => {
       const { container } = renderInTable(
         <PitStatusCell

@@ -53,7 +53,12 @@ const sortableSettings: SortableSetting[] = [
     hasSubSetting: true,
   },
   { id: 'statusBadges', label: 'Status Badges', configKey: 'statusBadges' },
-  { id: 'teamName', label: 'Team Name', configKey: 'teamName' },
+  {
+    id: 'teamName',
+    label: 'Team Name',
+    configKey: 'teamName',
+    hasSubSetting: true,
+  },
   {
     id: 'pitStatus',
     label: 'Pit Status',
@@ -512,6 +517,50 @@ const DisplaySettingsList = ({
                         },
                       });
                     }}
+                  />
+                </div>
+              )}
+            {setting.configKey === 'driverName' &&
+              settings.config.driverName.enabled && (
+                <div className="pl-8 mt-2">
+                  <SettingSelectRow<'none' | 'teamName'>
+                    title="Driver Name Subtext"
+                    value={
+                      settings.config.driverName.subtext === 'teamName'
+                        ? 'teamName'
+                        : 'none'
+                    }
+                    options={[
+                      { label: 'None', value: 'none' },
+                      { label: 'Team Name', value: 'teamName' },
+                    ]}
+                    onChange={(subtext) =>
+                      handleConfigChange({
+                        driverName: { ...settings.config.driverName, subtext },
+                      })
+                    }
+                  />
+                </div>
+              )}
+            {setting.configKey === 'teamName' &&
+              settings.config.teamName.enabled && (
+                <div className="pl-8 mt-2">
+                  <SettingSelectRow<'none' | 'driverName'>
+                    title="Team Name Subtext"
+                    value={
+                      settings.config.teamName.subtext === 'driverName'
+                        ? 'driverName'
+                        : 'none'
+                    }
+                    options={[
+                      { label: 'None', value: 'none' },
+                      { label: 'Driver Name', value: 'driverName' },
+                    ]}
+                    onChange={(subtext) =>
+                      handleConfigChange({
+                        teamName: { ...settings.config.teamName, subtext },
+                      })
+                    }
                   />
                 </div>
               )}
@@ -1298,6 +1347,22 @@ export const StandingsSettings = () => {
                         </div>
                       )}
                     </div>
+                    <SettingToggleRow
+                      title="Show Session Time Remaining"
+                      description="Show the time left in the session in the top class header, like 32:41/35m"
+                      enabled={
+                        settings.config.classHeaderStyle?.sessionTime
+                          ?.enabled ?? false
+                      }
+                      onToggle={(newValue) =>
+                        handleConfigChange({
+                          classHeaderStyle: {
+                            ...settings.config.classHeaderStyle,
+                            sessionTime: { enabled: newValue },
+                          },
+                        })
+                      }
+                    />
                   </SettingsSection>
 
                   <SettingDivider />

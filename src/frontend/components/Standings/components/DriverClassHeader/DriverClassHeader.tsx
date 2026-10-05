@@ -2,6 +2,7 @@ import { getStyleColorVar, getTailwindStyle } from '@irdashies/utils/colors';
 import type { ClassHeaderStyle } from '@irdashies/types';
 import { CarManufacturer } from '../CarManufacturer/CarManufacturer';
 import { HelmetIcon } from './HelmetIcon';
+import { ClassHeaderSessionTime } from './ClassHeaderSessionTime';
 import type { ClassLapEstimate, OrderedColumn } from '../../Standings';
 
 export interface DriverClassHeaderProps {
@@ -18,6 +19,8 @@ export interface DriverClassHeaderProps {
   manufacturerCounts?: { carId: number; count: number }[];
   playerManufacturerEntry?: { carId: number; count: number };
   orderedColumns?: OrderedColumn[];
+  /** Show the session time remaining (the first class header only). */
+  showSessionTime?: boolean;
 }
 
 export const DriverClassHeader = ({
@@ -34,6 +37,7 @@ export const DriverClassHeader = ({
   manufacturerCounts,
   playerManufacturerEntry,
   orderedColumns,
+  showSessionTime = false,
 }: DriverClassHeaderProps) => {
   if (!className) {
     return (
@@ -130,14 +134,14 @@ export const DriverClassHeader = ({
 
     const hidden = manufacturerCounts.length - visible.length;
     return (
-      <span className="flex items-center gap-2 text-white/80">
+      <span className="flex items-center gap-2">
         {visible.map(({ carId, count }) => (
           <span key={carId} className="flex items-center gap-0.5">
             <CarManufacturer carId={carId} />
             <span>{count}</span>
           </span>
         ))}
-        {hidden > 0 && <span className="text-white/50">+{hidden}</span>}
+        {hidden > 0 && <span>+{hidden}</span>}
       </span>
     );
   })();
@@ -161,16 +165,17 @@ export const DriverClassHeader = ({
             : `≈${estimatedLaps.total.toFixed(2)}`}
         </span>
       )}
+      {showSessionTime && <ClassHeaderSessionTime />}
       {!!sof && (
         <span>
-          <span className="text-white/60">SOF</span>{' '}
+          <span>SOF</span>{' '}
           {classHeaderStyle?.compactSof && sof >= 1000
             ? `${(sof / 1000).toFixed(1)}k`
             : sof.toFixed(0)}
         </span>
       )}
       <span className="flex items-center gap-1">
-        <HelmetIcon size="1.15em" className="text-white/80" />
+        <HelmetIcon size="1.15em" />
         <span>{totalDrivers}</span>
       </span>
       {manufacturerStats}
