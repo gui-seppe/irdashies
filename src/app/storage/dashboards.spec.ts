@@ -338,6 +338,38 @@ describe('dashboards', () => {
     });
   });
 
+  describe('font migration', () => {
+    const loadWithFont = (fontType: string | undefined) => {
+      mockReadData.mockImplementation((key: string) => {
+        if (key === 'currentProfile') return 'default';
+        if (key === 'profiles')
+          return { default: { id: 'default', name: 'Default' } };
+        if (key === 'dashboards')
+          return {
+            default: {
+              ...defaultDashboard,
+              generalSettings: {
+                ...defaultDashboard.generalSettings,
+                fontType,
+              },
+            },
+          };
+        return null;
+      });
+      return getOrCreateDefaultDashboard().generalSettings?.fontType;
+    };
+
+    it('moves a removed font to the default', () => {
+      expect(loadWithFont('lato')).toBe('titillium');
+      expect(loadWithFont('roboto')).toBe('titillium');
+      expect(loadWithFont('chakrapetch')).toBe('titillium');
+    });
+
+    it('keeps a font that is still offered', () => {
+      expect(loadWithFont('barlow')).toBe('barlow');
+    });
+  });
+
   describe('Gantry threshold migration', () => {
     const gantryDefaults = defaultDashboard.widgets.find(
       (w) => w.id === 'gantry'

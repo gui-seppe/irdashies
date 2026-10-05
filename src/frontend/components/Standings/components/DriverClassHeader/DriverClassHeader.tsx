@@ -148,7 +148,7 @@ export const DriverClassHeader = ({
 
   const infoContent = (
     <div
-      className={`inline-flex items-center gap-3 rounded-md border-l-4 bg-[var(--grouped-row-even,rgb(24_24_27/0.92))] px-2${py} [font-weight:bolder] whitespace-nowrap tabular-nums text-white [text-shadow:1px_1px_1px_rgba(0_0_0/0.35)]`}
+      className={`inline-flex items-center gap-3 rounded-md border-l-4 bg-[var(--grouped-row-even,rgb(24_24_27/0.92))] px-2${py} whitespace-nowrap tabular-nums text-white [text-shadow:1px_1px_1px_rgba(0_0_0/0.35)]`}
       style={{
         borderColor: classColorVar,
         backgroundImage: showGradient
@@ -210,7 +210,7 @@ export const DriverClassHeader = ({
             <td
               key={cell.id}
               colSpan={cell.colSpan}
-              className={`px-1 pt-0 pb-1 align-bottom text-center text-xs font-bold uppercase tracking-wide text-white/85 [text-shadow:0_1px_2px_rgb(0_0_0/0.9),0_0_4px_rgb(0_0_0/0.8)] whitespace-nowrap${borderClass}`}
+              className={`px-1 pt-0 pb-1 align-bottom text-center text-xs uppercase tracking-wide text-white/85 [text-shadow:0_1px_2px_rgb(0_0_0/0.9),0_0_4px_rgb(0_0_0/0.8)] whitespace-nowrap${borderClass}`}
             >
               {cell.label}
             </td>

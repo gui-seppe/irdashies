@@ -35,7 +35,7 @@ export const TeamNameCell = memo(
             className={[
               'block truncate',
               displayDriverName
-                ? 'text-white text-[0.92em] leading-[1.1] font-semibold'
+                ? 'text-white text-[0.92em] leading-[1.1]'
                 : 'text-slate-300',
             ].join(' ')}
           >

@@ -334,6 +334,13 @@ export interface StandingsSnapshot {
   previousCarTrackSurface: (number | undefined)[];
   /** Current calculated in-class position, indexed by CarIdx. */
   liveClassPosition: (number | undefined)[];
+  /**
+   * Session time each car crossed the finish line after the checkered flag,
+   * indexed by CarIdx; -1 until that car has finished. Frozen once set.
+   */
+  carIdxFinishTime: number[];
+  /** Laps completed when each car took the checkered flag; -1 until then. */
+  carIdxFinishLaps: number[];
   version: number;
 }
 

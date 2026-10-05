@@ -1597,7 +1597,7 @@ export const defaultDashboard: {
     },
   ],
   generalSettings: {
-    fontType: 'lato',
+    fontType: 'titillium',
     fontSize: 'sm',
     fontWeight: 'semibold',
     colorPalette: 'black',

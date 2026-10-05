@@ -76,7 +76,21 @@ export interface DriverTagSettings {
   presetOverrides?: Record<string, Partial<TagGroup>>;
 }
 
-export type FontType = 'lato' | 'notosans' | 'figtree' | 'inter' | 'roboto';
+export const FONT_TYPES = [
+  'titillium',
+  'barlow',
+  'saira',
+  'sairasemicondensed',
+  'exo2',
+] as const;
+export type FontType = (typeof FONT_TYPES)[number];
+export const DEFAULT_FONT_TYPE: FontType = 'titillium';
+
+/** Saved font if it's still offered, otherwise the default (e.g. a removed font). */
+export const resolveFontType = (font: unknown): FontType =>
+  FONT_TYPES.includes(font as FontType)
+    ? (font as FontType)
+    : DEFAULT_FONT_TYPE;
 export type FontSize =
   | '4xs'
   | '3xs'

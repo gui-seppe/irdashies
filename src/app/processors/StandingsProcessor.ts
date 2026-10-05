@@ -67,6 +67,13 @@ export class StandingsProcessor implements TelemetryProcessor<StandingsSnapshot>
   private checkeredSnapshotActive = false;
   private p1CarIdx: number | null = null;
   private p1LapAtCheckered: number | null = null;
+  // Line crossings, for the finish times recorded once the checkered is out.
+  private readonly prevLapCompleted: (number | undefined)[] = [];
+  private readonly prevLapDistPct: (number | undefined)[] = [];
+  private readonly lastCrossTime: (number | undefined)[] = [];
+  private readonly lastCrossLaps: (number | undefined)[] = [];
+  private readonly crossedThisFrame: boolean[] = [];
+  private checkeredSeen = false;
   private sortLaps: unknown[] = [];
   private sortSessionState = 0;
   private latest: StandingsSnapshot = this.emptySnapshot();
@@ -96,6 +103,7 @@ export class StandingsProcessor implements TelemetryProcessor<StandingsSnapshot>
     const timeWentBackwards =
       this.lastUpdateTime !== null && sessionTime < this.lastUpdateTime;
     if (lifecycleChanged || timeWentBackwards) this.reset(sessionNum);
+    const previousTime = this.lastUpdateTime;
     this.lastUpdateTime = sessionTime;
 
     copyBooleanArray(frame, 'CarIdxOnPitRoad', this.latest.carIdxOnPitRoad);
@@ -133,6 +141,7 @@ export class StandingsProcessor implements TelemetryProcessor<StandingsSnapshot>
     this.latest.sessionTime = sessionTime;
     this.latest.sessionState = sessionState;
     this.updateLiveClassPositions(frame, sessionNum, sessionState);
+    this.updateFinishTimes(frame, sessionTime, previousTime, sessionState);
     const carIdxOnPitRoad = this.latest.carIdxOnPitRoad;
     const carIdxLap = this.latest.carIdxLap;
     const carIdxTrackSurface = this.latest.carIdxTrackSurface;
@@ -193,6 +202,14 @@ export class StandingsProcessor implements TelemetryProcessor<StandingsSnapshot>
     this.checkeredSnapshotActive = false;
     this.p1CarIdx = null;
     this.p1LapAtCheckered = null;
+    this.prevLapCompleted.length = 0;
+    this.prevLapDistPct.length = 0;
+    this.lastCrossTime.length = 0;
+    this.lastCrossLaps.length = 0;
+    this.crossedThisFrame.length = 0;
+    this.checkeredSeen = false;
+    this.latest.carIdxFinishTime.length = 0;
+    this.latest.carIdxFinishLaps.length = 0;
     this.resultsSessionNum = null;
     this.resultClassPosition.length = 0;
     this.resultLapsComplete.length = 0;
@@ -245,8 +262,87 @@ export class StandingsProcessor implements TelemetryProcessor<StandingsSnapshot>
       lastPitLap: [],
       previousCarTrackSurface: [],
       liveClassPosition: [],
+      carIdxFinishTime: [],
+      carIdxFinishLaps: [],
       version: 0,
     };
+  }
+
+  /**
+   * Records the moment each car takes the checkered flag. The leader's
+   * crossing is what flips the session to Checkered, so on that first frame
+   * any car that crossed just before counts too; after that, each car's next
+   * crossing is its finish. Crossing times are interpolated between frames
+   * from lap distance, so gaps at the line don't depend on the frame rate.
+   */
+  private updateFinishTimes(
+    frame: Telemetry,
+    sessionTime: number,
+    previousTime: number | null,
+    sessionState: number
+  ): void {
+    const laps = frame.CarIdxLapCompleted?.value;
+    const distances = frame.CarIdxLapDistPct?.value;
+    if (!Array.isArray(laps)) return;
+
+    const finishTime = this.latest.carIdxFinishTime;
+    const finishLaps = this.latest.carIdxFinishLaps;
+    while (finishTime.length < laps.length) finishTime.push(-1);
+    while (finishLaps.length < laps.length) finishLaps.push(-1);
+
+    const crossedThisFrame = this.crossedThisFrame;
+    crossedThisFrame.length = laps.length;
+    crossedThisFrame.fill(false);
+    for (let carIdx = 0; carIdx < laps.length; carIdx += 1) {
+      const completed = Number(laps[carIdx] ?? -1);
+      const distance = Number(distances?.[carIdx] ?? -1);
+      const prevCompleted = this.prevLapCompleted[carIdx];
+      const prevDistance = this.prevLapDistPct[carIdx];
+      if (
+        prevCompleted !== undefined &&
+        prevCompleted >= 0 &&
+        completed > prevCompleted
+      ) {
+        let crossTime = sessionTime;
+        if (
+          previousTime !== null &&
+          prevDistance !== undefined &&
+          prevDistance >= 0 &&
+          distance >= 0
+        ) {
+          const before = 1 - prevDistance;
+          const covered = before + distance;
+          if (covered > 0 && covered < 0.5) {
+            crossTime =
+              previousTime + (sessionTime - previousTime) * (before / covered);
+          }
+        }
+        this.lastCrossTime[carIdx] = crossTime;
+        this.lastCrossLaps[carIdx] = completed;
+        crossedThisFrame[carIdx] = true;
+      }
+      this.prevLapCompleted[carIdx] = completed;
+      this.prevLapDistPct[carIdx] = distance;
+    }
+
+    if (sessionState !== SessionState.Checkered) return;
+
+    const firstCheckeredFrame = !this.checkeredSeen;
+    this.checkeredSeen = true;
+    // The leader's crossing and the state change can land a frame or two
+    // apart.
+    const leaderWindowStart = (previousTime ?? sessionTime) - 0.5;
+    for (let carIdx = 0; carIdx < laps.length; carIdx += 1) {
+      if (finishTime[carIdx] >= 0) continue;
+      const crossTime = this.lastCrossTime[carIdx];
+      const isFinish = firstCheckeredFrame
+        ? crossTime !== undefined && crossTime >= leaderWindowStart
+        : crossedThisFrame[carIdx] === true;
+      if (isFinish && crossTime !== undefined) {
+        finishTime[carIdx] = crossTime;
+        finishLaps[carIdx] = this.lastCrossLaps[carIdx] ?? -1;
+      }
+    }
   }
 
   private updateLiveClassPositions(

@@ -102,7 +102,7 @@ export const DriverStatusBadges = memo(
       <>
         {showPitTime && lastPitLap && lastPitLap > 1 && pitStopDuration && (
           <span className="text-yellow-500">
-            {formatTime(pitStopDuration, 'duration')}
+            {formatTime(pitStopDuration, 'pit-duration')}
           </span>
         )}
       </>

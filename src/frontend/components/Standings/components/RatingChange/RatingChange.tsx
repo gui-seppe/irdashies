@@ -1,5 +1,13 @@
 import { CaretUpIcon, CaretDownIcon, MinusIcon } from '@phosphor-icons/react';
 
+// Bold weight plus a matching stroke: heavier than Phosphor's bold alone.
+const CARET_PROPS = {
+  weight: 'bold',
+  stroke: 'currentColor',
+  strokeWidth: 16,
+  strokeLinejoin: 'round',
+} as const;
+
 interface RatingChangeProps {
   value?: number;
   justify?: 'start' | 'center';
@@ -27,11 +35,11 @@ export const RatingChange = ({
   if (roundedChange > 0) {
     text = `${roundedChange}`;
     color = 'text-green-400';
-    icon = <CaretUpIcon size={10} />;
+    icon = <CaretUpIcon size={10} {...CARET_PROPS} />;
   } else if (roundedChange < 0) {
     text = `${Math.abs(roundedChange)}`;
     color = 'text-red-400';
-    icon = <CaretDownIcon size={10} />;
+    icon = <CaretDownIcon size={10} {...CARET_PROPS} />;
   } else if (showZero) {
     text = '0';
     icon = <MinusIcon size={10} />;

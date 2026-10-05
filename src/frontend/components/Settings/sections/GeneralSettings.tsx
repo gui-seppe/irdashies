@@ -1,15 +1,19 @@
 import { useState } from 'react';
 import { useAvailableSimulators, useDashboard } from '@irdashies/context';
-import { SIMULATOR_IDS, SIMULATOR_LABELS } from '@irdashies/types';
+import {
+  SIMULATOR_IDS,
+  SIMULATOR_LABELS,
+  resolveFontType,
+} from '@irdashies/types';
 import type { GeneralSettingsType } from '@irdashies/types';
 import { BaseSettingsSection } from '../components/BaseSettingsSection';
 
 const FONT_PRESETS = {
-  lato: 'Lato',
-  notosans: 'Noto Sans',
-  figtree: 'Figtree',
-  inter: 'Inter',
-  roboto: 'Roboto',
+  titillium: 'Titillium Web',
+  barlow: 'Barlow',
+  saira: 'Saira',
+  sairasemicondensed: 'Saira Semi Condensed',
+  exo2: 'Exo 2',
 };
 
 const FONT_SIZE_PRESETS = {
@@ -41,7 +45,7 @@ const FONT_WEIGHT_PRESETS = {
 };
 
 const FONT_WEIGHT_RESTRICTIONS: Record<string, string[]> = {
-  lato: ['medium', 'semibold'],
+  titillium: ['medium', 'extrabold'],
 };
 
 export const HIGHLIGHT_COLOR_PRESETS = new Map([
@@ -85,7 +89,7 @@ export const GeneralSettings = ({ previewMode }: GeneralSettingsProps = {}) => {
   const { bridge, currentDashboard, onDashboardUpdated } = useDashboard();
   const availableSimulators = useAvailableSimulators();
   const [settings, setSettings] = useState<GeneralSettingsType>({
-    fontType: currentDashboard?.generalSettings?.fontType ?? 'lato',
+    fontType: resolveFontType(currentDashboard?.generalSettings?.fontType),
     fontSize: currentDashboard?.generalSettings?.fontSize ?? 'sm',
     fontWeight: currentDashboard?.generalSettings?.fontWeight ?? 'normal',
     colorPalette: currentDashboard?.generalSettings?.colorPalette ?? 'default',
@@ -157,7 +161,7 @@ export const GeneralSettings = ({ previewMode }: GeneralSettingsProps = {}) => {
   };
 
   const handleFontChange = (
-    newFont: 'lato' | 'notosans' | 'figtree' | 'inter' | 'roboto'
+    newFont: NonNullable<GeneralSettingsType['fontType']>
   ) => {
     const newSettings = { ...settings, fontType: newFont };
     setSettings(newSettings);
@@ -344,7 +348,7 @@ export const GeneralSettings = ({ previewMode }: GeneralSettingsProps = {}) => {
           {/* Font Weight Dropdown */}
           <div className="mt-4">
             <select
-              value={settings.fontType ?? 'lato'}
+              value={resolveFontType(settings.fontType)}
               onChange={(e) =>
                 handleFontChange(
                   e.target.value as NonNullable<GeneralSettingsType['fontType']>

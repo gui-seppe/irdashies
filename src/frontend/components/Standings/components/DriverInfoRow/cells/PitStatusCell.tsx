@@ -82,9 +82,15 @@ export const PitStatusCell = memo(
       // Snug fit for the flat text (e.g. "L19  1:15"), in em so it follows
       // the font size. A cell still grows if its content needs more.
       const plainWidthClass = showPitTime ? 'w-[5.5em]' : 'w-[3.5em]';
-      const duration =
+      // Whole seconds while the clock is still running (PIT / TOW); tenths
+      // once the stop is complete (OUT / last pit lap).
+      const liveDuration =
         showPitTime && pitStopDuration
           ? formatTime(pitStopDuration, 'duration')
+          : undefined;
+      const duration =
+        showPitTime && pitStopDuration
+          ? formatTime(pitStopDuration, 'pit-duration')
           : undefined;
 
       let label: ReactNode = null;
@@ -98,14 +104,14 @@ export const PitStatusCell = memo(
         // A tow puts the car straight into its stall, which starts the pit
         // clock, so the same running time shows how long the tow has taken.
         label = 'TOW';
-        value = duration;
+        value = liveDuration;
         textClass = 'text-white';
         style = pitGlowStyle('var(--color-red-500)');
       } else if (pit && currentSessionType === 'Race') {
         // Live pit state only in races. In practice / qualifying a car sat
         // in the pits shows nothing; OUT and the stop time follow as usual.
         label = 'PIT';
-        value = duration;
+        value = liveDuration;
         textClass = 'text-white';
         style = pitGlowStyle(
           carTrackSurface === TrackLocation.InPitStall
@@ -126,7 +132,7 @@ export const PitStatusCell = memo(
       return (
         <td
           data-column="pitStatus"
-          className={`${plainWidthClass} ${compactMode === 'ultra' ? '' : 'px-2'} align-middle whitespace-nowrap [font-weight:bolder] ${textClass}`}
+          className={`${plainWidthClass} ${compactMode === 'ultra' ? '' : 'px-2'} align-middle whitespace-nowrap ${textClass}`}
           style={style}
         >
           {label && (

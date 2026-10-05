@@ -227,7 +227,7 @@ describe('PitStatusCell', () => {
       );
 
       const td = pitCell(container);
-      expect(td?.textContent).toBe('L1935');
+      expect(td?.textContent).toBe('L1935.0');
       expect(td?.className).toContain('text-yellow-400');
       expect(td?.style.boxShadow).toBe('');
     });

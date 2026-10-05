@@ -7,6 +7,7 @@ export type TimeFormat =
   | 'seconds-mixed'
   | 'seconds'
   | 'duration'
+  | 'pit-duration'
   | 'duration-wlabels'
   | 'duration-hh:mm:ss'
   | 'duration-hh:mm-wlabel';
@@ -73,6 +74,13 @@ export const formatTime = (
       } else {
         formattedTime = `${remainingSeconds}`;
       }
+      break;
+    case 'pit-duration':
+      // Tenths under a minute (43.2), whole seconds beyond (2:06).
+      formattedTime =
+        totalSeconds < 60
+          ? `${remainingSeconds}.${Math.floor(ms / 100)}`
+          : formatTime(seconds, 'duration');
       break;
     case 'duration-hh:mm:ss':
       formattedTime = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;

@@ -1,9 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap')
+@import url('https://fonts.googleapis.com/css2?family=Titillium+Web:ital,wght@0,200;0,300;0,400;0,600;0,700;0,900;1,200;1,300;1,400;1,600;1,700&display=swap')
 layer(base);
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,100..900;1,100..900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,100..900;1,100..900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Saira:ital,wght@0,100..900;1,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Saira+Semi+Condensed:wght@100;200;300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100..900;1,100..900&display=swap');
 
 @import 'tailwindcss';
 
@@ -32,7 +32,7 @@ layer(base);
 }
 
 @theme {
-  --font-sans: 'Lato', sans-serif;
+  --font-sans: 'Titillium Web', sans-serif;
   --animate-pulse-border: pulse-border 1s infinite;
   --animate-blink: blink 1s infinite;
   --text-xs: 10px;
@@ -118,24 +118,24 @@ html {
   color-scheme: dark;
 }
 
-.overlay-window.overlay-theme-font-face-lato {
-  font-family: 'Lato', sans-serif;
+.overlay-window.overlay-theme-font-face-titillium {
+  font-family: 'Titillium Web', sans-serif;
 }
 
-.overlay-window.overlay-theme-font-face-notosans {
-  font-family: 'Noto Sans', sans-serif;
+.overlay-window.overlay-theme-font-face-barlow {
+  font-family: 'Barlow', sans-serif;
 }
 
-.overlay-window.overlay-theme-font-face-figtree {
-  font-family: 'Figtree', sans-serif;
+.overlay-window.overlay-theme-font-face-saira {
+  font-family: 'Saira', sans-serif;
 }
 
-.overlay-window.overlay-theme-font-face-inter {
-  font-family: 'Inter', sans-serif;
+.overlay-window.overlay-theme-font-face-sairasemicondensed {
+  font-family: 'Saira Semi Condensed', sans-serif;
 }
 
-.overlay-window.overlay-theme-font-face-roboto {
-  font-family: 'Roboto', sans-serif;
+.overlay-window.overlay-theme-font-face-exo2 {
+  font-family: 'Exo 2', sans-serif;
 }
 
 /* Theme classes for different font sizes */

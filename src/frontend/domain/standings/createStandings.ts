@@ -17,7 +17,95 @@ export type LastTimeState = 'session-fastest' | 'personal-best' | undefined;
 export interface Gap {
   value: number | undefined;
   laps: number;
+  /** Measured at (or projected to) the finish line after the checkered. */
+  atFinish?: boolean;
 }
+
+/** Finish-line crossings recorded after the checkered flag (see StandingsProcessor). */
+export interface FinishData {
+  /** Session time each car finished, -1 until it has. */
+  time: readonly number[];
+  /** Laps completed at the finish, -1 until finished. */
+  laps: readonly number[];
+  sessionTime: number;
+}
+
+/**
+ * Gaps once the class winner has taken the checkered flag: finishers are
+ * measured at the line against the winner's crossing, and cars still on their
+ * last lap get a projection to the line until they cross.
+ */
+const finishLineGaps = (
+  classStandings: Standings[],
+  finish: FinishData,
+  carIdxLap: number[],
+  carIdxLapDistPct: number[]
+): Standings[] | undefined => {
+  let winner: Standings | undefined;
+  for (const standing of classStandings) {
+    const time = finish.time[standing.carIdx] ?? -1;
+    if (time < 0) continue;
+    if (!winner) {
+      winner = standing;
+      continue;
+    }
+    const laps = finish.laps[standing.carIdx] ?? -1;
+    const winnerLaps = finish.laps[winner.carIdx] ?? -1;
+    if (
+      laps > winnerLaps ||
+      (laps === winnerLaps && time < (finish.time[winner.carIdx] ?? -1))
+    ) {
+      winner = standing;
+    }
+  }
+  if (!winner) return undefined;
+
+  const winnerTime = finish.time[winner.carIdx];
+  const winnerLaps = finish.laps[winner.carIdx];
+  const sinceWinner = Math.max(0, finish.sessionTime - winnerTime);
+
+  return classStandings.map((standing) => {
+    if (standing.carIdx === winner.carIdx) {
+      return {
+        ...standing,
+        gap: { value: undefined, laps: 0, atFinish: true },
+      };
+    }
+    const time = finish.time[standing.carIdx] ?? -1;
+    if (time >= 0) {
+      const laps = (finish.laps[standing.carIdx] ?? winnerLaps) - winnerLaps;
+      return {
+        ...standing,
+        gap: {
+          value: Math.max(0, time - winnerTime),
+          laps: Math.min(0, laps),
+          atFinish: true,
+        },
+      };
+    }
+    // Retired, or parked before taking the flag: nothing to measure.
+    if (!standing.onTrack) {
+      return { ...standing, gap: { value: undefined, laps: 0 } };
+    }
+    // Still running to the flag. CarIdxLap is the lap being driven, so the
+    // winner sat at winnerLaps + 1 (start of a new lap) when finishing.
+    const lap = carIdxLap[standing.carIdx] ?? 0;
+    const pct = Math.max(0, carIdxLapDistPct[standing.carIdx] ?? 0);
+    const lapsBehind = Math.max(0, Math.floor(winnerLaps + 1 - (lap + pct)));
+    const lapTime =
+      standing.fastestTime > 0
+        ? standing.fastestTime
+        : standing.carClass.estLapTime;
+    return {
+      ...standing,
+      gap: {
+        value: sinceWinner + Math.max(0, 1 - pct) * lapTime,
+        laps: lapsBehind > 0 ? -lapsBehind : 0,
+        atFinish: true,
+      },
+    };
+  });
+};
 
 export interface Standings {
   carIdx: number;
@@ -209,15 +297,13 @@ export const createDriverStandings = (
       const isClassFastest = result.CarIdx === classFastestCarIdx;
 
       // Ensure we always produce numeric fastest/last times (fallback to -1)
-      const bestLapTime = (telemetry?.carIdxBestLapTime?.[result.CarIdx] ?? 0);
-      const computedBestTime = bestLapTime > 1
-          ? bestLapTime
-          : result.FastestTime ?? -1;
+      const bestLapTime = telemetry?.carIdxBestLapTime?.[result.CarIdx] ?? 0;
+      const computedBestTime =
+        bestLapTime > 1 ? bestLapTime : (result.FastestTime ?? -1);
 
-      const lastLapTime = (telemetry?.carIdxLastLapTime?.[result.CarIdx] ?? 0);
-      const computedLastTime = lastLapTime > 1
-          ? lastLapTime
-          : result.LastTime ?? -1;
+      const lastLapTime = telemetry?.carIdxLastLapTime?.[result.CarIdx] ?? 0;
+      const computedLastTime =
+        lastLapTime > 1 ? lastLapTime : (result.LastTime ?? -1);
 
       return {
         carIdx: result.CarIdx,
@@ -267,12 +353,12 @@ export const createDriverStandings = (
           result.CarIdx === session.playerIdx
             ? undefined // Don't show deltas for player (comparing to themselves)
             : lapDeltasVsPlayer &&
-              lapDeltasVsPlayer[result.CarIdx] &&
-              lapDeltasVsPlayer[result.CarIdx].length > 0
-            ? lapDeltasVsPlayer[result.CarIdx].slice(
-                -(numLapsToShow ?? lapDeltasVsPlayer[result.CarIdx].length)
+                lapDeltasVsPlayer[result.CarIdx] &&
+                lapDeltasVsPlayer[result.CarIdx].length > 0
+              ? lapDeltasVsPlayer[result.CarIdx].slice(
+                  -(numLapsToShow ?? lapDeltasVsPlayer[result.CarIdx].length)
                 ) // Use most recent laps
-            : undefined,
+              : undefined,
         lastPitLap: lastPitLap[result.CarIdx] ?? undefined,
         lastLap: lastLap[result.CarIdx] ?? undefined,
         prevCarTrackSurface: prevCarTrackSurface[result.CarIdx] ?? undefined,
@@ -406,7 +492,8 @@ export const groupStandingsByClass = (
   }
 
   sorted.sort(
-    ([, a], [, b]) => b[0].carClass.relativeSpeed - a[0].carClass.relativeSpeed);
+    ([, a], [, b]) => b[0].carClass.relativeSpeed - a[0].carClass.relativeSpeed
+  );
 
   return sorted;
 };
@@ -430,7 +517,7 @@ export const groupStandingsBySpeed = (
     const validDrivers = drivers
       .filter(
         (d) =>
-          d.position !== undefined &&  //Check for valid position
+          d.position !== undefined && //Check for valid position
           //Check for valid time to filter qualifying positions with no set time
           ((d.fastestTime !== undefined && d.fastestTime > 0) ||
             (d.lastTime !== undefined && d.lastTime > 0))
@@ -531,7 +618,8 @@ export const augmentStandingsWithGap = (
   carIdxOnPitRoad: boolean[],
   carIdxEstTime: number[],
   useLivePositionStandings: boolean,
-  sessionType?: string
+  sessionType?: string,
+  finish?: FinishData
 ): [string, Standings[]][] => {
   const isRace = sessionType === 'Race';
 
@@ -548,6 +636,18 @@ export const augmentStandingsWithGap = (
     const classLeader = classStandings[0];
     if (!classLeader) {
       return [classId, classStandings];
+    }
+
+    // After the class winner finishes, gaps are taken at the finish line,
+    // whatever the live-position setting.
+    if (isRace && finish) {
+      const atFinish = finishLineGaps(
+        classStandings,
+        finish,
+        carIdxLap,
+        carIdxLapDistPct
+      );
+      if (atFinish) return [classId, atFinish];
     }
     // In race sessions, bail early if the class leader has no delta (no data yet).
     // In qualifying/practice, the class leader always has undefined delta (they're
@@ -621,8 +721,12 @@ export const augmentStandingsWithGap = (
         }
 
         const classLeaderTrackPctForLaps = carIdxLapDistPct[classLeader.carIdx];
-        const driverLapNumber = !carIdxLap[driverStanding.carIdx] ? 1 : carIdxLap[driverStanding.carIdx];
-        const classLeaderLapNumber = !carIdxLap[classLeader.carIdx] ? 1 : carIdxLap[classLeader.carIdx];
+        const driverLapNumber = !carIdxLap[driverStanding.carIdx]
+          ? 1
+          : carIdxLap[driverStanding.carIdx];
+        const classLeaderLapNumber = !carIdxLap[classLeader.carIdx]
+          ? 1
+          : carIdxLap[classLeader.carIdx];
 
         const gap = {
           value: gapValue ? Math.abs(gapValue) : undefined,
@@ -682,7 +786,11 @@ export const augmentStandingsWithInterval = (
         // For race sessions, onTrack is still required.
         else if (driverAhead.gap?.value === undefined) {
           const isRace = driverStanding.currentSessionType === 'Race';
-          if (!isRace || driverStanding.onTrack) {
+          if (
+            !isRace ||
+            driverStanding.onTrack ||
+            driverStanding.gap?.atFinish
+          ) {
             interval = driverStanding.gap?.value;
           }
         }
@@ -692,7 +800,8 @@ export const augmentStandingsWithInterval = (
         else if (
           driverStanding.gap?.value !== undefined &&
           (driverStanding.currentSessionType !== 'Race' ||
-            driverStanding.onTrack)
+            driverStanding.onTrack ||
+            driverStanding.gap.atFinish)
         ) {
           // We use Math.abs to handle edge cases where deltas and positions
           // are slightly out of sync in a telemetry frame.

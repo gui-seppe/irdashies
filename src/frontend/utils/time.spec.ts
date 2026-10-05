@@ -151,6 +151,19 @@ describe('time', () => {
       });
     });
 
+    describe('format: "pit-duration"', () => {
+      it('shows tenths under a minute', () => {
+        expect(formatTime(43.2, 'pit-duration')).toBe('43.2');
+        expect(formatTime(7, 'pit-duration')).toBe('7.0');
+        expect(formatTime(59.96, 'pit-duration')).toBe('59.9');
+      });
+
+      it('shows whole seconds from a minute up', () => {
+        expect(formatTime(60, 'pit-duration')).toBe('1:00');
+        expect(formatTime(126.4, 'pit-duration')).toBe('2:06');
+      });
+    });
+
     describe('format: "duration"', () => {
       it('should format duration m:ss for times under 1 hour with single digit minutes', () => {
         expect(formatTime(75.123, 'duration')).toBe('1:15');

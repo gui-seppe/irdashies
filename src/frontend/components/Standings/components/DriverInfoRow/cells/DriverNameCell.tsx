@@ -183,9 +183,7 @@ export const DriverNameCell = memo(
               <div
                 className={[
                   'relative overflow-hidden h-[1lh]',
-                  hasTeamSubtext
-                    ? 'text-[0.92em] leading-[1.1] font-semibold'
-                    : '',
+                  hasTeamSubtext ? 'text-[0.92em] leading-[1.1]' : '',
                 ].join(' ')}
               >
                 <span
@@ -205,9 +203,7 @@ export const DriverNameCell = memo(
               <span
                 className={[
                   'block truncate',
-                  hasTeamSubtext
-                    ? 'text-[0.92em] leading-[1.1] font-semibold'
-                    : '',
+                  hasTeamSubtext ? 'text-[0.92em] leading-[1.1]' : '',
                 ].join(' ')}
               >
                 {staticText}

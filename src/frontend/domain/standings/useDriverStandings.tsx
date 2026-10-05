@@ -75,13 +75,18 @@ export const useDriverStandings = (
     enabled: useLivePositionStandings,
   });
   const fastestLaps = useSessionFastestLaps(sessionNum);
-  const carIdxLastLapTime = standingsSnapshot?.carIdxLastLapTime ?? EMPTY_NUMBERS;
-  const carIdxBestLapTime = standingsSnapshot?.carIdxBestLapTime ?? EMPTY_NUMBERS;
+  const carIdxLastLapTime =
+    standingsSnapshot?.carIdxLastLapTime ?? EMPTY_NUMBERS;
+  const carIdxBestLapTime =
+    standingsSnapshot?.carIdxBestLapTime ?? EMPTY_NUMBERS;
   const carIdxF2Time = standingsSnapshot?.carIdxF2Time ?? EMPTY_NUMBERS;
   const carIdxEstTime = standingsSnapshot?.carIdxEstTime ?? EMPTY_NUMBERS;
   const carIdxOnPitRoad = standingsSnapshot?.carIdxOnPitRoad ?? EMPTY_BOOLEANS;
   const carIdxLap = standingsSnapshot?.carIdxLap ?? EMPTY_NUMBERS;
   const carIdxLapDistPct = standingsSnapshot?.carIdxLapDistPct ?? EMPTY_NUMBERS;
+  const carIdxFinishTime = standingsSnapshot?.carIdxFinishTime ?? EMPTY_NUMBERS;
+  const carIdxFinishLaps = standingsSnapshot?.carIdxFinishLaps ?? EMPTY_NUMBERS;
+  const snapshotSessionTime = standingsSnapshot?.sessionTime ?? 0;
   const carIdxTrackSurface = (standingsSnapshot?.carIdxTrackSurface ??
     EMPTY_TRACK_LOCATIONS) as TrackLocation[];
   const radioTransmitCarIdx = useRadioActiveCarIdxs(
@@ -186,7 +191,12 @@ export const useDriverStandings = (
             carIdxOnPitRoad,
             carIdxEstTime,
             useLivePositionStandings,
-            sessionType
+            sessionType,
+            {
+              time: carIdxFinishTime,
+              laps: carIdxFinishLaps,
+              sessionTime: snapshotSessionTime,
+            }
           )
         : iratingAugmentedGroupedByClass;
 
@@ -232,6 +242,9 @@ export const useDriverStandings = (
     carIdxLap,
     carIdxLapDistPct,
     carIdxEstTime,
+    carIdxFinishTime,
+    carIdxFinishLaps,
+    snapshotSessionTime,
     driverClass,
     buffer,
     numNonClassDrivers,

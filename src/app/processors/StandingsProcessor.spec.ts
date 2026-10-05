@@ -182,4 +182,62 @@ describe('StandingsProcessor', () => {
       carIdxLap: [],
     });
   });
+  describe('finish times', () => {
+    // Car 0 leads, car 1 is 3s behind on the same lap, car 2 a lap down.
+    const finishFrame = (
+      sessionTime: number,
+      state: number,
+      lapCompleted: number[],
+      lapDistPct: number[]
+    ) =>
+      frame(sessionTime, {
+        SessionState: { value: [state] },
+        CarIdxLapCompleted: { value: lapCompleted },
+        CarIdxLapDistPct: { value: lapDistPct },
+      });
+
+    it('records each car crossing the line after the checkered', () => {
+      const processor = new StandingsProcessor();
+      processor.init(session);
+      const racing = SessionState.Racing;
+      const checkered = SessionState.Checkered;
+
+      processor.onFrame(finishFrame(100, racing, [9, 9, 8], [0.98, 0.9, 0.95]));
+      // Leader crosses halfway between frames; the flag comes out with it.
+      processor.onFrame(
+        finishFrame(100.1, checkered, [10, 9, 8], [0.02, 0.92, 0.96])
+      );
+      expect(processor.snapshot().carIdxFinishTime[0]).toBeCloseTo(100.05);
+      expect(processor.snapshot().carIdxFinishLaps[0]).toBe(10);
+      expect(processor.snapshot().carIdxFinishTime[1]).toBe(-1);
+
+      processor.onFrame(
+        finishFrame(103, checkered, [10, 9, 8], [0.2, 0.99, 0.99])
+      );
+      processor.onFrame(
+        finishFrame(103.1, checkered, [10, 10, 9], [0.21, 0.01, 0.01])
+      );
+      expect(processor.snapshot().carIdxFinishTime[1]).toBeCloseTo(103.05);
+      expect(processor.snapshot().carIdxFinishLaps).toEqual([10, 10, 9]);
+
+      // Leader's cool-down lap and leaving the world don't move the finish.
+      processor.onFrame(
+        finishFrame(190, checkered, [11, -1, -1], [0.01, -1, -1])
+      );
+      expect(processor.snapshot().carIdxFinishTime[0]).toBeCloseTo(100.05);
+      expect(processor.snapshot().carIdxFinishLaps).toEqual([10, 10, 9]);
+    });
+
+    it('does not count crossings before the checkered as finishes', () => {
+      const processor = new StandingsProcessor();
+      processor.init(session);
+      processor.onFrame(
+        finishFrame(100, SessionState.Racing, [9, 9, 8], [0.98, 0.9, 0.95])
+      );
+      processor.onFrame(
+        finishFrame(100.1, SessionState.Racing, [10, 9, 8], [0.02, 0.92, 0.96])
+      );
+      expect(processor.snapshot().carIdxFinishTime).toEqual([-1, -1, -1]);
+    });
+  });
 });

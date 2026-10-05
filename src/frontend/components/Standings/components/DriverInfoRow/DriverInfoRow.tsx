@@ -279,6 +279,8 @@ export const DriverInfoRow = memo((props: DriverRowInfoProps) => {
   }, [fastestTime, config?.fastestTime?.timeFormat]);
 
   const offTrack = carTrackSurface === 0;
+  // Lapped / lapping rows take the row's red or blue text colour.
+  const lapColored = !isPlayer && (!!isLapped || !!isLappingAhead);
 
   const tailwindStyles = useMemo(() => {
     return getTailwindStyle(classColor, highlightColor, isMultiClass);
@@ -327,6 +329,7 @@ export const DriverInfoRow = memo((props: DriverRowInfoProps) => {
             position={position}
             isPlayer={isPlayer}
             offTrack={offTrack}
+            lapColored={lapColored}
             tailwindStyles={tailwindStyles}
             showBackground={positionBackground}
             plain={isGrouped}
@@ -347,6 +350,7 @@ export const DriverInfoRow = memo((props: DriverRowInfoProps) => {
             showBackground={numberBackground}
             showBorder={numberBorder}
             plain={isGrouped}
+            lapColored={lapColored}
             compactMode={compactMode}
           />
         ),
@@ -742,6 +746,7 @@ export const DriverInfoRow = memo((props: DriverRowInfoProps) => {
     displayOrder,
     config,
     position,
+    lapColored,
     lap,
     isPlayer,
     offTrack,
@@ -842,8 +847,8 @@ export const DriverInfoRow = memo((props: DriverRowInfoProps) => {
         key={carIdx}
         style={groupedRowStyle}
         className={[
-          // No fixed weight: rows follow the general font weight setting, and
-          // emphasised cells use `bolder` (one step heavier than it).
+          // No fixed weight: every cell follows the general font weight
+          // setting.
           'text-sm *:bg-(--row-bg)',
           '[&>td:first-child]:bg-(image:--row-grad-a) [&>td:nth-child(2)]:bg-(image:--row-grad-b)',
           '[&>td:first-child]:[box-shadow:inset_4px_0_0_var(--class-color)] [&>td:first-child]:pl-3',

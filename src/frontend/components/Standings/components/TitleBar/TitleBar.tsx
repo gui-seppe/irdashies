@@ -81,7 +81,7 @@ export const TitleBar = ({ titleBarSettings }: TitleBarProps) => {
         )}
 
       {/* Centered series/session name text */}
-      <div className="relative z-10 font-medium">{displayText}</div>
+      <div className="relative z-10">{displayText}</div>
     </div>
   );
 };

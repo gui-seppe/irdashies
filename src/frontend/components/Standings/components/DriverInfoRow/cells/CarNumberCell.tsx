@@ -9,6 +9,11 @@ interface CarNumberCellProps {
   /** Italic number with no badge or '#' (grouped standings rows). */
   plain?: boolean;
   compactMode?: string;
+  /**
+   * The row is tinted for a lapped / lapping car. The number keeps its usual
+   * colour rather than picking up the tint.
+   */
+  lapColored?: boolean;
 }
 
 export const CarNumberCell = memo(
@@ -19,6 +24,7 @@ export const CarNumberCell = memo(
     showBorder = true,
     plain = false,
     compactMode,
+    lapColored = false,
   }: CarNumberCellProps) => {
     if (plain) {
       return (
@@ -28,12 +34,11 @@ export const CarNumberCell = memo(
         >
           {/* Small muted '#' and a class-tinted italic number, so it doesn't
               read as a second position column. */}
-          <span className="inline-flex min-w-[3.5ch] items-baseline justify-end italic [font-weight:bolder]">
+          <span className="inline-flex min-w-[3.5ch] items-baseline justify-end italic">
             <span className="mr-px text-[0.75em] text-white/40">#</span>
             <span
               style={{
-                color:
-                  'color-mix(in srgb, var(--class-color, currentColor) 55%, currentColor)',
+                color: `color-mix(in srgb, var(--class-color, currentColor) 55%, ${lapColored ? 'white' : 'currentColor'})`,
               }}
             >
               {carNumber}

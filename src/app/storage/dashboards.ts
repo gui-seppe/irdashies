@@ -4,7 +4,11 @@ import type {
   DashboardProfile,
 } from '@irdashies/types';
 import { emitDashboardUpdated } from './dashboardEvents';
-import { defaultDashboard, deepMergeConfig } from '@irdashies/types';
+import {
+  defaultDashboard,
+  deepMergeConfig,
+  resolveFontType,
+} from '@irdashies/types';
 import { readData, writeData } from './storage';
 import { writeFile, mkdir, readFile, readdir, unlink } from 'node:fs/promises';
 import { resolve, basename, sep } from 'node:path';
@@ -105,6 +109,11 @@ export const getOrCreateDefaultDashboardForProfile = (profileId: string) => {
       generalSettings: {
         ...defaultDashboard.generalSettings,
         ...dashboard.generalSettings,
+        // Fonts that are no longer offered fall back to the default.
+        fontType: resolveFontType(
+          dashboard.generalSettings?.fontType ??
+            defaultDashboard.generalSettings?.fontType
+        ),
       },
       widgets: [...dashboard.widgets, ...missingWidgets].map((widget) => {
         const defaultWidget = defaultDashboard.widgets.find(

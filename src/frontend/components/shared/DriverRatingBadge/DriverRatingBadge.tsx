@@ -1,5 +1,13 @@
 import { CaretDownIcon, CaretUpIcon } from '@phosphor-icons/react';
 
+// Bold weight plus a matching stroke: heavier than Phosphor's bold alone.
+const CARET_PROPS = {
+  weight: 'bold',
+  stroke: 'currentColor',
+  strokeWidth: 16,
+  strokeLinejoin: 'round',
+} as const;
+
 export interface DriverRatingBadgeProps {
   license?: string;
   rating?: number;
@@ -140,26 +148,29 @@ export const DriverRatingBadge = ({
         // Default format: one pill, colored license segment + B&W rating
         return (
           <div className="flex items-center mx-2">
-            <div className="flex items-stretch overflow-hidden rounded-full text-xs [font-weight:bolder] leading-tight text-white text-nowrap tabular-nums">
+            <div className="flex items-stretch overflow-hidden rounded-full text-xs leading-tight text-white text-nowrap tabular-nums">
               <span
                 className={`pl-2 pr-1.5 py-px min-w-[3.4em] text-center ${(isMinimal ? minimalColorMap : pillColorMap)[licenseLevel] ?? ''}`}
               >
                 {formattedLicense} {safetyRating}
               </span>
-              <span className="flex items-center gap-1.5 bg-white/15 pl-1.5 pr-2 py-px">
+              <span className="flex items-center gap-1 bg-white/15 pl-1.5 pr-2 py-px">
                 <span>{simplifiedRating}k</span>
                 {iratingChange !== undefined && !isNaN(iratingChange) && (
-                  // Fixed width keeps pills aligned across rows; padding goes
-                  // before the caret so it always hugs the number.
-                  <span className="flex items-center justify-end gap-0.5 min-w-[calc(3ch+12px)]">
-                    {Math.round(iratingChange) > 0 && (
-                      <CaretUpIcon size={10} weight="bold" />
+                  // Same gap either side of the caret; the number is
+                  // right-aligned in a 2-digit slot so carets line up.
+                  <>
+                    {Math.round(iratingChange) > 0 ? (
+                      <CaretUpIcon size={10} {...CARET_PROPS} />
+                    ) : Math.round(iratingChange) < 0 ? (
+                      <CaretDownIcon size={10} {...CARET_PROPS} />
+                    ) : (
+                      <span className="w-2.5" />
                     )}
-                    {Math.round(iratingChange) < 0 && (
-                      <CaretDownIcon size={10} weight="bold" />
-                    )}
-                    <span>{Math.abs(Math.round(iratingChange))}</span>
-                  </span>
+                    <span className="min-w-[2ch] text-right">
+                      {Math.abs(Math.round(iratingChange))}
+                    </span>
+                  </>
                 )}
               </span>
             </div>

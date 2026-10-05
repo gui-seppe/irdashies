@@ -6,6 +6,8 @@ interface PositionCellProps {
   isPlayer: boolean;
   tailwindStyles: TailwindStyles;
   offTrack: boolean;
+  /** Follow the row's lapped / lapping text colour instead of white. */
+  lapColored?: boolean;
   showBackground?: boolean;
   /** Bold number without the player background (grouped standings rows). */
   plain?: boolean;
@@ -17,6 +19,7 @@ export const PositionCell = memo(
     position,
     isPlayer,
     offTrack,
+    lapColored = false,
     tailwindStyles,
     showBackground = true,
     plain = false,
@@ -30,7 +33,9 @@ export const PositionCell = memo(
         : '';
     const textColor = offTrack
       ? 'text-yellow-900'
-      : `text-white${plain ? ' [font-weight:bolder]' : ''}`;
+      : lapColored
+        ? ''
+        : 'text-white';
     const pxClass =
       compactMode === 'ultra'
         ? 'min-w-[2ch]'

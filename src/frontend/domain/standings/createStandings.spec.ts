@@ -622,6 +622,64 @@ describe('createStandings', () => {
       );
       expect(result[0][1][1].gap?.value).toBeUndefined();
     });
+
+    describe('after the checkered flag', () => {
+      // Car 0 won at t=1000 on 20 laps, car 1 finished 4.2s later, car 2 a
+      // lap down, car 3 is still on its last lap and car 4 retired.
+      const finish = {
+        time: [1000, 1004.2, 1030, -1, -1],
+        laps: [20, 20, 19, -1, -1],
+        sessionTime: 1010,
+      };
+      const grouped = (): [string, Standings[]][] => [
+        [
+          '1',
+          [
+            // Winner and finishers have left the track: gaps must survive it.
+            makeStanding(0, 0, false, 'Race'),
+            makeStanding(1, 99, false, 'Race'),
+            makeStanding(2, 99, false, 'Race'),
+            {
+              ...makeStanding(3, 99, true, 'Race'),
+              fastestTime: 90,
+            },
+            makeStanding(4, 99, false, 'Race'),
+          ],
+        ],
+      ];
+      const run = (useLivePositions: boolean) =>
+        augmentStandingsWithGap(
+          grouped(),
+          [21, 21, 20, 20, 0],
+          [0.1, 0.1, 0.1, 0.9, 0],
+          [false, false, false, false, false],
+          [0, 0, 0, 0, 0],
+          useLivePositions,
+          'Race',
+          finish
+        )[0][1];
+
+      it.each([false, true])(
+        'measures gaps at the line (live positions %s)',
+        (useLivePositions) => {
+          const result = run(useLivePositions);
+          expect(result[0].gap).toMatchObject({ value: undefined, laps: 0 });
+          expect(result[1].gap?.value).toBeCloseTo(4.2);
+          expect(result[1].gap?.laps).toBe(0);
+          expect(result[2].gap?.laps).toBe(-1);
+          // 10s since the winner finished + 10% of a 90s lap to go.
+          expect(result[3].gap?.value).toBeCloseTo(19);
+          expect(result[3].gap?.laps).toBe(0);
+          expect(result[4].gap?.value).toBeUndefined();
+        }
+      );
+
+      it('keeps intervals for finishers that have left the track', () => {
+        const result = augmentStandingsWithInterval([['1', run(false)]])[0][1];
+        expect(result[1].interval).toBeCloseTo(4.2);
+        expect(result[2].interval).toBeCloseTo(25.8);
+      });
+    });
   });
 
   describe('augmentStandingsWithInterval', () => {
