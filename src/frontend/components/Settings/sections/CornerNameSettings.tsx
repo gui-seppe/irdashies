@@ -103,7 +103,7 @@ export const CornerNameSettings = () => {
 
                 <SettingToggleRow
                   title="Show Corner Speeds"
-                  description="Max speed before braking and min speed at the apex for the corner you are in, next to your best lap's. This lap's numbers update through the corner and hold until the next one. Uses the same lap recording as Lap Trace, so the best-lap column fills in once a clean lap has been recorded."
+                  description="Max speed before braking and min speed at the apex for the corner you are in, next to your fastest lap of this session. This lap's numbers update through the corner and hold until the next one. Each session starts fresh, so a race never compares against practice or qualifying; laps through the pits or started mid-lap don't count."
                   enabled={settings.config.showCornerSpeeds ?? false}
                   onToggle={(v) => handleConfigChange({ showCornerSpeeds: v })}
                 />

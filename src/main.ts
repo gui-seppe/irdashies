@@ -27,7 +27,7 @@ import {
   startComponentServer,
   getComponentServerPort,
 } from './app/webserver/componentServer';
-import { updateElectronApp } from 'update-electron-app';
+import { updateElectronApp, UpdateSourceType } from 'update-electron-app';
 // @ts-expect-error no types for squirrel
 import started from 'electron-squirrel-startup';
 import { Analytics } from './app/analytics';
@@ -112,8 +112,19 @@ if (started) app.quit();
 // the background, and Squirrel applies it on the next launch — after which the
 // beta no longer starts. The version number is not the problem and bumping it
 // would not help; the identity mismatch is.
+//
+// The custom build is its own identity with its own feed: releases published
+// to the gui-seppe fork (npm run publish) are built as irdashies-custom, so
+// it only ever receives builds of itself.
 if (app.getName() === 'irdashies') {
   updateElectronApp();
+} else if (app.getName() === 'irdashies-custom') {
+  updateElectronApp({
+    updateSource: {
+      type: UpdateSourceType.ElectronPublicUpdateService,
+      repo: 'gui-seppe/irdashies',
+    },
+  });
 } else {
   log.info(
     `[update] Auto-update disabled for non-official build "${app.getName()}"`

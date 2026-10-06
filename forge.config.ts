@@ -33,7 +33,10 @@ const config: ForgeConfig = {
           owner: 'gui-seppe',
           name: 'irdashies',
         },
-        prerelease: true,
+        // The update service only serves published, non-prerelease releases,
+        // and the custom build updates itself from this feed.
+        prerelease: false,
+        draft: false,
       },
     },
   ],
