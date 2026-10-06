@@ -9,7 +9,9 @@ const selectPitLapTelemetry = (snapshot: StandingsSnapshot) =>
     snapshot.carIdxOnPitRoad,
     snapshot.carIdxLap,
     snapshot.sessionUniqueId,
-    Math.floor(snapshot.sessionTime),
+    // Exact, so pit entry/exit are timed to the tick they happened on; the
+    // equality below only lets it through once per whole second on its own.
+    snapshot.sessionTime,
     snapshot.carIdxTrackSurface,
     snapshot.sessionState,
   ] as const;
@@ -21,7 +23,7 @@ const pitLapTelemetryEqual = (
   shallow(previous[0], next[0]) &&
   shallow(previous[1], next[1]) &&
   previous[2] === next[2] &&
-  previous[3] === next[3] &&
+  Math.floor(previous[3]) === Math.floor(next[3]) &&
   shallow(previous[4], next[4]) &&
   previous[5] === next[5];
 

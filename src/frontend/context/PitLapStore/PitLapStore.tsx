@@ -252,10 +252,13 @@ function calculatePitStopDuration(
     return null;
   }
 
-  const entry = Math.round(entryTime);
-  const exit =
-    exitTime != null ? Math.round(exitTime) : Math.round(currentSessionTime);
-  const duration = Math.max(exit, entry) - entry;
+  // A completed stop keeps its tenths (shown as 43.2). One still running is
+  // whole seconds, so the live clock ticks once a second rather than with
+  // every update.
+  const duration =
+    exitTime != null
+      ? Math.round(Math.max(0, exitTime - entryTime) * 10) / 10
+      : Math.max(0, Math.round(currentSessionTime) - Math.round(entryTime));
 
   const isSessionEnded = sessionState >= SessionState.Checkered;
   const hasInvalidDuration = duration <= 0 || isNaN(duration) || duration > 300;

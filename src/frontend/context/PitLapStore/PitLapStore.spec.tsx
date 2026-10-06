@@ -297,9 +297,23 @@ describe('PitLapStore', () => {
       const { result } = renderHook(() => usePitStopDuration());
       const state = usePitLapStore.getState();
 
-      expect(result.current[0]).toBe(25);
+      // Completed stops keep tenths: 125.7 - 100.5.
+      expect(result.current[0]).toBe(25.2);
       expect(state.pitEntryTime[0]).toBe(entryTime);
       expect(state.pitExitTime[0]).toBe(exitTime);
+    });
+
+    it('times a stop driven through the store to the tenth', () => {
+      const update = usePitLapStore.getState().updatePitLaps;
+      const racing = SessionState.Racing;
+      // On track, then pit road (surface 1) at 100.3s, back on track at 143.5s.
+      update([false], [5], 123, 99.8, [3], racing);
+      update([true], [5], 123, 100.3, [1], racing);
+      update([true], [5], 123, 120.9, [1], racing);
+      update([false], [5], 123, 143.5, [3], racing);
+
+      const { result } = renderHook(() => usePitStopDuration());
+      expect(result.current[0]).toBe(43.2);
     });
 
     it('should calculate ongoing pit stop duration using current session time', () => {
