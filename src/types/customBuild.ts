@@ -15,6 +15,7 @@ export const BUILD_WIDGETS: readonly string[] = [
   'fuel',
   'wind',
   'cornername',
+  'deltagraph',
 ];
 
 /** Settings pages (menuItems `path`) hidden from the menu in this build. */

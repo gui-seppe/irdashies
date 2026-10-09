@@ -13,8 +13,7 @@ const meta: Meta<typeof SettingsLayout> = {
   title: 'components/SettingsLayout',
   decorators: [
     (Story, context) => {
-      const { initialPath = 'standings' } =
-        context.args as StoryProps;
+      const { initialPath = 'standings' } = context.args as StoryProps;
       return (
         <DashboardProvider bridge={mockDashboardBridge}>
           <MemoryRouter initialEntries={[initialPath]}>

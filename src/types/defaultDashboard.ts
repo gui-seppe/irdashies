@@ -1424,6 +1424,31 @@ export const defaultDashboard: {
       },
     },
     {
+      id: 'deltagraph',
+      enabled: false,
+      layout: {
+        x: 400,
+        y: 760,
+        width: 700,
+        height: 170,
+      },
+      config: {
+        background: { opacity: 80 },
+        cornerLabelStyle: 'number',
+        showLapTime: true,
+        showSessionBest: true,
+        showPreviousLap: true,
+        showOnlyWhenOnTrack: true,
+        sessionVisibility: {
+          race: true,
+          loneQualify: true,
+          openQualify: true,
+          practice: true,
+          offlineTesting: true,
+        },
+      },
+    },
+    {
       id: 'deltaspeed',
       enabled: false,
       layout: {

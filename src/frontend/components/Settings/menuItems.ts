@@ -82,6 +82,12 @@ export const allWidgetItems: MenuItem[] = [
     widgetType: 'carsystems',
   },
   {
+    to: '/settings/deltagraph',
+    path: '/deltagraph',
+    label: 'Delta Graph',
+    widgetType: 'deltagraph',
+  },
+  {
     to: '/settings/deltaspeed',
     path: '/deltaspeed',
     label: 'Delta Speed',

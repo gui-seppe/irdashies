@@ -20,6 +20,7 @@ import { InformationBar } from './components/InformationBar/InformationBar';
 import { SlowCarAhead } from './components/SlowCarAhead/SlowCarAhead';
 import { SectorDelta } from './components/SectorDelta/SectorDelta';
 import { DeltaSpeed } from './components/DeltaSpeed/DeltaSpeed';
+import { DeltaGraph } from './components/DeltaGraph/DeltaGraph';
 import { CarSystems } from './components/CarSystems/CarSystems';
 import { HeartRate } from './components/HeartRate/HeartRate';
 import { CornerNameOverlay } from './components/CornerNameOverlay';
@@ -52,6 +53,7 @@ export {
   SlowCarAhead,
   SectorDelta,
   DeltaSpeed,
+  DeltaGraph,
   HeartRate,
   CornerNameOverlay,
   LapTrace,
@@ -82,6 +84,7 @@ export const WIDGET_MAP: Record<keyof WidgetConfigMap, ElementType> = {
   slowcarahead: SlowCarAhead,
   sectordelta: SectorDelta,
   deltaspeed: DeltaSpeed,
+  deltagraph: DeltaGraph,
   carsystems: CarSystems,
   heartrate: HeartRate,
   cornername: CornerNameOverlay,

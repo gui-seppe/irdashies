@@ -710,6 +710,18 @@ export interface CarSystemsConfig {
   showOnlyWhenOnTrack: boolean;
 }
 
+export interface DeltaGraphConfig {
+  background: { opacity: number };
+  /** How corners are labelled under the graph. */
+  cornerLabelStyle: 'number' | 'name';
+  showLapTime: boolean;
+  showSessionBest: boolean;
+  /** The previous lap's delta as a dashed line. */
+  showPreviousLap: boolean;
+  showOnlyWhenOnTrack: boolean;
+  sessionVisibility: SessionVisibilitySettings;
+}
+
 export interface DeltaSpeedConfig {
   background: { opacity: number };
   /**
@@ -992,6 +1004,7 @@ export interface WidgetConfigMap {
   slowcarahead: SlowCarAheadConfig;
   sectordelta: SectorDeltaConfig;
   deltaspeed: DeltaSpeedConfig;
+  deltagraph: DeltaGraphConfig;
   carsystems: CarSystemsConfig;
   heartrate: HeartRateConfig;
   cornername: CornerNameOverlayConfig;
@@ -1102,6 +1115,7 @@ export type InformationBarWidgetSettings =
 export type SlowCarAheadWidgetSettings = BaseWidgetSettings<SlowCarAheadConfig>;
 export type SectorDeltaWidgetSettings = BaseWidgetSettings<SectorDeltaConfig>;
 export type DeltaSpeedWidgetSettings = BaseWidgetSettings<DeltaSpeedConfig>;
+export type DeltaGraphWidgetSettings = BaseWidgetSettings<DeltaGraphConfig>;
 export type CarSystemsWidgetSettings = BaseWidgetSettings<CarSystemsConfig>;
 export type HeartRateWidgetSettings = BaseWidgetSettings<HeartRateConfig>;
 export type CornerNameWidgetSettings =

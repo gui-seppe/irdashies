@@ -85,8 +85,8 @@ const DisplaySettingsList = ({
             onToggle={(enabled) => {
               const cv =
                 (settings.config[setting.configKey] as
-                  | { enabled?: boolean; [key: string]: unknown }
-                  | undefined) ?? {};
+                  { enabled?: boolean; [key: string]: unknown } | undefined) ??
+                {};
               handleConfigChange({
                 [setting.configKey]: { ...cv, enabled },
               });
