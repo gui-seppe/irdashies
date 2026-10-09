@@ -11,6 +11,8 @@ import type {
   GantryConfig,
 } from '@irdashies/types';
 import {
+  fitLayoutToDisplay,
+  isLayoutOnDisplay,
   isWidgetDisabledForSim,
   isWidgetHiddenInBuild,
 } from '@irdashies/types';
@@ -150,6 +152,8 @@ export class OverlayManager {
   private onWindowReadyCallbacks = new Set<(windowId: string) => void>();
   private rendererDataSubscriptions?: RendererDataSubscriptions;
   private latestSessionData: unknown;
+  private displayChangeTimer?: ReturnType<typeof setTimeout>;
+  private watchingDisplays = false;
 
   /** Padding around the widget bounding box when shrink-wrapping */
   private static readonly SHRINK_WRAP_PADDING = 20;
@@ -174,6 +178,32 @@ export class OverlayManager {
   }
 
   /**
+   * Overlay windows are built per display, so switching a monitor off or on
+   * while the app runs leaves them sized for displays that no longer exist —
+   * and widgets from a removed monitor never reach the primary. Rebuild once
+   * the display set settles (Windows fires several events per change).
+   */
+  private watchDisplayChanges(): void {
+    if (this.watchingDisplays) return;
+    this.watchingDisplays = true;
+    const rebuild = () => {
+      clearTimeout(this.displayChangeTimer);
+      this.displayChangeTimer = setTimeout(() => {
+        if (this.isQuitting || !this.currentDashboard) return;
+        logger.info('[OverlayManager] Displays changed, rebuilding overlays');
+        this.forceRefreshOverlays(this.currentDashboard, {
+          createSettingsWindow: false,
+        });
+      }, 1000);
+    };
+    screen.on('display-added', rebuild);
+    screen.on('display-removed', rebuild);
+    screen.on('display-metrics-changed', (_event, _display, changed) => {
+      if (changed.includes('bounds')) rebuild();
+    });
+  }
+
+  /**
    * Create one overlay window per display
    */
   public createOverlays(
@@ -184,6 +214,8 @@ export class OverlayManager {
     const { generalSettings } = dashboardLayout;
     this.skipTaskbar = generalSettings?.skipTaskbar ?? true;
     this.overlayAlwaysOnTop = generalSettings?.overlayAlwaysOnTop ?? true;
+
+    this.watchDisplayChanges();
 
     const allDisplays = screen.getAllDisplays();
     const primaryDisplay = screen.getPrimaryDisplay();
@@ -378,8 +410,11 @@ export class OverlayManager {
     });
     browserWindow.on('closed', () => {
       logger.info(`Display ${display.id} overlay window closed`);
-      this.displayWindows.delete(display.id);
-      this.displayBoundsInfo.delete(display.id);
+      // A rebuild may already have put a new window under this id
+      if (this.displayWindows.get(display.id) === browserWindow) {
+        this.displayWindows.delete(display.id);
+        this.displayBoundsInfo.delete(display.id);
+      }
     });
 
     browserWindow.webContents.on('render-process-gone', (_event, details) => {
@@ -520,18 +555,18 @@ export class OverlayManager {
     const primaryDisplay = screen.getPrimaryDisplay();
     const isPrimary = displayId === primaryDisplay.id;
 
-    const enabledWidgets = dashboard.widgets.filter((w) =>
-      this.isWidgetVisible(w)
-    );
-    const widgetsForDisplay = enabledWidgets.filter((widget) => {
-      const centerX = widget.layout.x + widget.layout.width / 2;
-      const centerY = widget.layout.y + widget.layout.height / 2;
-      const inThisDisplay =
-        centerX >= displayBounds.x &&
-        centerX < displayBounds.x + displayBounds.width &&
-        centerY >= displayBounds.y &&
-        centerY < displayBounds.y + displayBounds.height;
-      return inThisDisplay || (!inThisDisplay && isPrimary);
+    const allDisplayBounds = screen.getAllDisplays().map((d) => d.bounds);
+    // Same assignment as useWidgetsForThisDisplay: widgets on no connected
+    // display render on the primary, moved inside it.
+    const widgetsForDisplay = dashboard.widgets.flatMap((widget) => {
+      if (!this.isWidgetVisible(widget)) return [];
+      if (isLayoutOnDisplay(widget.layout, displayBounds)) return [widget];
+      if (!isPrimary) return [];
+      if (allDisplayBounds.some((b) => isLayoutOnDisplay(widget.layout, b)))
+        return [];
+      return [
+        { ...widget, layout: fitLayoutToDisplay(widget.layout, displayBounds) },
+      ];
     });
 
     if (widgetsForDisplay.length === 0) return null;
