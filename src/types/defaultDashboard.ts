@@ -1622,6 +1622,9 @@ export const defaultDashboard: {
           lapWindow: 75,
           autoPin: true,
         },
+        window: {
+          alwaysOnTop: false,
+        },
       },
     },
   ],
