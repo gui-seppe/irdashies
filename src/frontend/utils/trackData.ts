@@ -114,6 +114,25 @@ function normalizeTrackId(trackName: string): string | null {
   const target = trackName.trim().toLowerCase();
   const targetTokens = new Set(target.split(/\s+/).filter(Boolean));
   if (targetTokens.size === 0) return null;
+  // A circuit's identity is in its distinctive words, not in these.
+  const GENERIC = new Set([
+    'circuit',
+    'international',
+    'raceway',
+    'road',
+    'speedway',
+    'park',
+    'autodromo',
+    'autodrome',
+    'the',
+    'of',
+    'de',
+    'la',
+    'do',
+    'at',
+  ]);
+  const distinctive = [...targetTokens].filter((t) => !GENERIC.has(t));
+  if (distinctive.length === 0) return null;
 
   const bundle = trackDataBundle as unknown as TrackDataBundleType;
   let best: { id: string; score: number } | null = null;
@@ -122,6 +141,10 @@ function normalizeTrackId(trackName: string): string | null {
     let overlap = 0;
     for (const t of targetTokens) if (entryTokens.has(t)) overlap += 1;
     if (overlap === 0) continue;
+    // At least one distinctive word has to be shared. Agreeing only on
+    // "international" or "raceway" is not a match, and would show another
+    // circuit's corners.
+    if (!distinctive.some((t) => entryTokens.has(t))) continue;
     const containsAll = overlap === targetTokens.size;
     const surplus = entryTokens.size - overlap;
     const score = (containsAll ? 1000 : 0) + overlap * 10 - surplus;
