@@ -13,6 +13,7 @@ export const BUILD_WIDGETS: readonly string[] = [
   'standings',
   'relative',
   'fuel',
+  'weather',
   'wind',
   'cornername',
   'deltagraph',

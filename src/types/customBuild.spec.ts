@@ -34,6 +34,7 @@ describe('customBuild', () => {
     expect(widgetItems.map((item) => item.widgetType).sort()).toEqual(
       [...BUILD_WIDGETS].sort()
     );
+    expect(widgetItems.map((item) => item.widgetType)).toContain('weather');
     expect(allWidgetItems.length).toBeGreaterThan(widgetItems.length);
   });
 
